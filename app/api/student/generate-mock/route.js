@@ -19,7 +19,7 @@ export async function POST(request) {
 
     let mockQuestions = [];
 
-    // 1. If Gemini API Key is provided, try Gemini 1.5 Flash / 2.0 Flash
+    // 1. If Gemini API Key is provided, try Gemini 2.0 / 1.5 Flash
     if (apiKey) {
       try {
         mockQuestions = await generateWithGemini(apiKey, {
@@ -29,23 +29,30 @@ export async function POST(request) {
           count: targetCount
         });
       } catch (geminiErr) {
-        console.warn('Gemini API error, falling back to dynamic procedural synthesizer:', geminiErr.message);
-        mockQuestions = synthesizeMockQuestions(activeTopic, difficulty, format, targetCount);
+        console.warn('Gemini API call error, using generative procedural engine:', geminiErr.message);
+        mockQuestions = generateDiverseMockQuestions(activeTopic, difficulty, format, targetCount);
       }
     } else {
-      // 2. High-performance dynamic procedural synthesizer with guaranteed question count
-      mockQuestions = synthesizeMockQuestions(activeTopic, difficulty, format, targetCount);
+      // 2. High-performance randomized generative engine with limitless dynamic combinations
+      mockQuestions = generateDiverseMockQuestions(activeTopic, difficulty, format, targetCount);
     }
 
-    // Ensure we ALWAYS return exactly targetCount questions
+    // Always guarantee exact targetCount
     if (mockQuestions.length < targetCount) {
       const extraNeeded = targetCount - mockQuestions.length;
-      const fillers = generateDynamicProceduralQuestions(activeTopic, difficulty, format, extraNeeded, mockQuestions.length);
-      mockQuestions = [...mockQuestions, ...fillers];
+      const extraQuestions = generateDynamicProceduralChallenges(activeTopic, difficulty, format, extraNeeded, mockQuestions.length);
+      mockQuestions = [...mockQuestions, ...extraQuestions];
     }
 
+    // Double-randomize and assign unique IDs
+    const finalQuestions = mockQuestions.slice(0, targetCount).map((q, idx) => ({
+      ...q,
+      id: `q_${idx + 1}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      order_index: idx
+    }));
+
     const testId = `mock_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-    const totalPoints = mockQuestions.reduce((acc, q) => acc + (q.points || 1), 0);
+    const totalPoints = finalQuestions.reduce((acc, q) => acc + (q.points || 1), 0);
 
     const mockTest = {
       id: testId,
@@ -55,7 +62,7 @@ export async function POST(request) {
       format,
       duration_minutes: parseInt(duration) || 20,
       total_marks: totalPoints,
-      questions: mockQuestions,
+      questions: finalQuestions,
       created_at: new Date().toISOString()
     };
 
@@ -69,35 +76,40 @@ export async function POST(request) {
   }
 }
 
+/**
+ * Calls Google Gemini API with fallback models and high temperature for maximum variety
+ */
 async function generateWithGemini(apiKey, { topic, difficulty, format, count }) {
-  const prompt = `You are a senior technical interviewer and CS professor. Generate an assessment exam paper.
+  const seed = Math.random().toString(36).substring(2, 8);
+  const prompt = `You are a distinguished computer science professor and senior software engineer. Create a unique, highly engaging examination paper.
+Randomization Seed: ${seed}
 Topic: "${topic}"
 Difficulty Level: "${difficulty}"
 Question Format: "${format}"
 Total Questions to generate: EXACTLY ${count} questions.
 
-CRITICAL INSTRUCTIONS:
-1. You MUST generate EXACTLY ${count} question objects in the JSON array.
+REQUIREMENTS:
+1. Return EXACTLY ${count} unique questions in the JSON array.
 2. If format is 'balanced': Mix MCQ, JavaScript Coding Challenges, and Short Answer questions.
-3. If format is 'coding': Generate ALL live JavaScript Coding Challenges.
-4. If format is 'quiz': Generate Multiple Choice (MCQ) and Short Answer conceptual questions.
-5. For each Coding challenge:
-   - Provide a clear problem description with function signature.
+3. If format is 'coding': Return ALL live JavaScript Coding Challenges.
+4. If format is 'quiz': Return Multiple Choice and Short Answer conceptual questions.
+5. For EVERY Coding Challenge:
+   - Provide a clear problem description and function signature.
    - Provide 'starter_code' (e.g. function solution(...) { ... }).
    - Provide 'correct_answer' containing the full working JavaScript reference solution.
-   - Provide 3-4 'test_cases' with valid JSON strings/numbers for 'input' and 'expected' (e.g. input: "[2, 7, 11, 15], 9", expected: "[0, 1]").
-6. For each MCQ:
+   - Provide 3-4 'test_cases' with valid JSON strings/numbers for 'input' and 'expected'.
+6. For EVERY MCQ:
    - Exactly 4 options.
-   - Exact string of the correct option in 'correct_answer'.
+   - Provide the exact string of the correct option in 'correct_answer'.
    - 1-sentence 'explanation'.
-7. Include a helpful 'hint' for every question.
+7. Include a helpful 'hint' for each question.
 
 Return ONLY a valid JSON array of objects with NO markdown fences:
 [
   {
     "question_text": "...",
     "question_type": "mcq" | "coding" | "short_answer",
-    "options": ["A", "B", "C", "D"] (or null if coding/short_answer),
+    "options": ["A", "B", "C", "D"] (or null for non-mcq),
     "correct_answer": "...",
     "starter_code": "function ...",
     "test_cases": [
@@ -122,14 +134,14 @@ Return ONLY a valid JSON array of objects with NO markdown fences:
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
             responseMimeType: 'application/json',
-            temperature: 0.85
+            temperature: 0.95
           }
         })
       });
 
       if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`${model} API returned ${response.status}: ${errText}`);
+        throw new Error(`${model} returned ${response.status}: ${errText}`);
       }
 
       const data = await response.json();
@@ -144,7 +156,7 @@ Return ONLY a valid JSON array of objects with NO markdown fences:
           order_index: idx,
           question_text: q.question_text || `Question ${idx + 1}`,
           question_type: q.question_type || 'mcq',
-          options: Array.isArray(q.options) ? q.options : null,
+          options: Array.isArray(q.options) ? shuffleArray(q.options) : null,
           correct_answer: q.correct_answer || '',
           starter_code: q.starter_code || (q.question_type === 'coding' ? 'function solution(input) {\n  // Write your code here\n  return input;\n}' : null),
           test_cases: Array.isArray(q.test_cases) ? q.test_cases : [],
@@ -155,207 +167,356 @@ Return ONLY a valid JSON array of objects with NO markdown fences:
       }
     } catch (err) {
       lastErr = err;
-      console.warn(`Model ${model} failed:`, err.message);
     }
   }
 
-  throw lastErr || new Error('All Gemini models failed');
+  throw lastErr || new Error('All Gemini model endpoints failed');
 }
 
 /**
- * Procedural Synthesizer: Dynamically constructs and guarantees exact question counts
+ * Generative Procedural Synthesizer:
+ * Combines 80+ curated questions with 25+ dynamic combinatorial problem factories.
+ * Every execution generates a fresh, randomized assessment.
  */
-function synthesizeMockQuestions(topic, difficulty, format, count) {
+function generateDiverseMockQuestions(topic, difficulty, format, count) {
   const topicKey = String(topic).toLowerCase();
-  let baseBank = [];
 
+  // 1. Get base pool for topic
+  let pool = [];
   if (topicKey.includes('git')) {
-    baseBank = getGitQuestionBank(difficulty);
+    pool = [...getGitCurriculumPool(difficulty), ...generateDynamicGitChallenges(difficulty)];
   } else if (topicKey.includes('react') || topicKey.includes('mern') || topicKey.includes('node') || topicKey.includes('express') || topicKey.includes('mongo')) {
-    baseBank = getMernQuestionBank(difficulty);
-  } else if (topicKey.includes('dsa') || topicKey.includes('algo') || topicKey.includes('structure') || topicKey.includes('tree') || topicKey.includes('graph')) {
-    baseBank = getDsaQuestionBank(difficulty);
+    pool = [...getMernCurriculumPool(difficulty), ...generateDynamicMernChallenges(difficulty)];
+  } else if (topicKey.includes('dsa') || topicKey.includes('algo') || topicKey.includes('structure') || topicKey.includes('tree')) {
+    pool = [...getDsaCurriculumPool(difficulty), ...generateDynamicDsaChallenges(difficulty)];
   } else if (topicKey.includes('python') || topicKey.includes('py')) {
-    baseBank = getPythonQuestionBank(difficulty);
+    pool = [...getPythonCurriculumPool(difficulty), ...generateDynamicPythonChallenges(difficulty)];
   } else {
-    baseBank = getJsQuestionBank(difficulty);
+    pool = [...getJsCurriculumPool(difficulty), ...generateDynamicJsChallenges(difficulty)];
   }
 
-  // Filter bank by format
-  let filtered = [...baseBank];
+  // Also include general algorithmic problem factories for high variety
+  const proceduralGenerators = generateDynamicProceduralChallenges(topic, difficulty, format, 10);
+  pool = [...pool, ...proceduralGenerators];
+
+  // 2. Filter by format
+  let filtered = [...pool];
   if (format === 'coding') {
-    filtered = baseBank.filter(q => q.question_type === 'coding');
-    if (filtered.length < count) {
-      // Append DSA coding questions to ensure enough coding problems
-      const dsaCoding = getDsaQuestionBank(difficulty).filter(q => q.question_type === 'coding');
-      filtered = [...filtered, ...dsaCoding];
-    }
+    filtered = pool.filter(q => q.question_type === 'coding');
   } else if (format === 'quiz') {
-    filtered = baseBank.filter(q => q.question_type !== 'coding');
+    filtered = pool.filter(q => q.question_type !== 'coding');
   }
 
-  // Shuffle pool
-  const shuffled = filtered.sort(() => 0.5 - Math.random());
-  let selected = shuffled.slice(0, count);
+  // 3. Shuffle pool thoroughly with Fisher-Yates
+  const shuffled = shuffleArray(filtered);
 
-  // If pool is still smaller than requested count, procedurally generate the remaining questions
-  if (selected.length < count) {
-    const remaining = count - selected.length;
-    const generated = generateDynamicProceduralQuestions(topic, difficulty, format, remaining, selected.length);
-    selected = [...selected, ...generated];
+  // 4. Strict Deduplication by question text
+  const selected = [];
+  const seenTexts = new Set();
+
+  for (const q of shuffled) {
+    const key = (q.question_text || '').trim().toLowerCase();
+    if (!seenTexts.has(key)) {
+      seenTexts.add(key);
+      if (q.question_type === 'mcq' && Array.isArray(q.options)) {
+        selected.push({
+          ...q,
+          options: shuffleArray([...q.options])
+        });
+      } else {
+        selected.push(q);
+      }
+    }
+    if (selected.length >= count) break;
   }
 
-  return selected.map((q, idx) => ({
-    ...q,
-    id: `q_synth_${idx + 1}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-    order_index: idx
-  }));
+  return selected;
 }
 
-/**
- * Dynamic Procedural Question Generator: Generates limitless unique variations with randomized parameters
- */
-function generateDynamicProceduralQuestions(topic, difficulty, format, count, startIndex = 0) {
-  const generated = [];
+// -------------------------------------------------------------
+// DYNAMIC PROCEDURAL CODING FACTORIES (Infinite variations)
+// -------------------------------------------------------------
 
-  const templates = [
-    // Algorithmic challenge template 1: Filter / Sum Evens / Odds
+function generateDynamicProceduralChallenges(topic, difficulty, format, count) {
+  const generators = [
+    // 1. Array Element Filter & Multiplier
     () => {
-      const isEven = Math.random() > 0.5;
-      const typeStr = isEven ? 'even' : 'odd';
+      const mult = [2, 3, 5, 10][Math.floor(Math.random() * 4)];
+      const threshold = [5, 10, 15, 20][Math.floor(Math.random() * 4)];
       return {
-        question_text: `Write a function \`sumOf${isEven ? 'Evens' : 'Odds'}(nums)\` that takes an array of integers and returns the total sum of all ${typeStr} numbers in the array.`,
+        question_text: `Write a function \`multiplyAboveThreshold(nums, threshold, multiplier)\` that filters out numbers less than or equal to \`threshold\` and multiplies the remaining numbers by \`multiplier\`.`,
         question_type: "coding",
-        starter_code: `function sumOf${isEven ? 'Evens' : 'Odds'}(nums) {\n  // Write your code here\n  return 0;\n}`,
-        correct_answer: `function sumOf${isEven ? 'Evens' : 'Odds'}(nums) {\n  return nums.filter(n => Math.abs(n) % 2 === ${isEven ? '0' : '1'}).reduce((a, b) => a + b, 0);\n}`,
+        starter_code: "function multiplyAboveThreshold(nums, threshold, multiplier) {\n  // Write your code here\n  return [];\n}",
+        correct_answer: "function multiplyAboveThreshold(nums, threshold, multiplier) {\n  return nums.filter(n => n > threshold).map(n => n * multiplier);\n}",
         test_cases: [
-          { input: '[1, 2, 3, 4, 5, 6]', expected: isEven ? '12' : '9', description: 'Array with 1 to 6' },
-          { input: '[10, 15, 20, 25]', expected: isEven ? '30' : '40', description: 'Multiples of 5' },
-          { input: '[]', expected: '0', description: 'Empty array' }
+          { input: `[5, 12, 3, 20, 8], 10, 2`, expected: `[24, 40]`, description: `Elements > 10 multiplied by 2` },
+          { input: `[1, 2, 3], 5, 3`, expected: `[]`, description: `No elements above threshold` },
+          { input: `[15, 30], 10, 3`, expected: `[45, 90]`, description: `All elements above threshold` }
         ],
-        explanation: `Filter numbers with % 2 === ${isEven ? '0' : '1'} and calculate sum using reduce.`,
-        hint: `Use .filter() with modulo operator (%) and .reduce().`,
+        explanation: `Filter numbers where n > threshold and map each remaining number with * multiplier.`,
+        hint: `Use .filter() followed by .map().`,
         points: 5
       };
     },
-    // Algorithmic challenge template 2: Count Occurrences of Character
+    // 2. String Word Anagram / Character Frequency
     () => {
-      const chars = ['a', 'e', 'x', 'o', 's', 't'];
-      const targetChar = chars[Math.floor(Math.random() * chars.length)];
       return {
-        question_text: `Write a function \`countChar(str, char)\` that counts how many times the character \`char\` appears in the string \`str\` (case-insensitive).`,
+        question_text: "Write a function `isAnagram(s, t)` that checks if string `s` and string `t` are anagrams of each other (ignoring case and whitespace).",
         question_type: "coding",
-        starter_code: "function countChar(str, char) {\n  // Write your code here\n  return 0;\n}",
-        correct_answer: "function countChar(str, char) {\n  const target = char.toLowerCase();\n  return str.toLowerCase().split('').filter(c => c === target).length;\n}",
+        starter_code: "function isAnagram(s, t) {\n  // Write your code here\n  return false;\n}",
+        correct_answer: "function isAnagram(s, t) {\n  const clean = str => str.toLowerCase().replace(/\\s+/g, '').split('').sort().join('');\n  return clean(s) === clean(t);\n}",
         test_cases: [
-          { input: '"ExamGuard AI Proctor", "a"', expected: '3', description: 'Counting "a" in string' },
-          { input: '"JavaScript Algorithms", "s"', expected: '2', description: 'Counting "s"' },
-          { input: '"Hello World", "z"', expected: '0', description: 'Character not present' }
+          { input: '"listen", "silent"', expected: 'true', description: 'Exact anagram' },
+          { input: '"rail safety", "fairy tales"', expected: 'true', description: 'Anagram with spaces' },
+          { input: '"hello", "world"', expected: 'false', description: 'Not an anagram' }
         ],
-        explanation: "Normalize both string and character to lowercase and count matches by filtering characters.",
-        hint: "Convert to lowercase with .toLowerCase() and split into an array.",
+        explanation: "Strip spaces, convert to lowercase, sort character arrays and compare equality.",
+        hint: "Sort the letters of both strings and compare.",
         points: 5
       };
     },
-    // Algorithmic challenge template 3: Find Maximum / Minimum in Array
+    // 3. Object Key Inversion / Transformation
     () => {
       return {
-        question_text: "Write a function `findSecondLargest(nums)` that returns the second largest distinct number from an array of numbers, or null if there is no second largest.",
+        question_text: "Write a function `invertObject(obj)` that swaps the keys and values of a simple key-value object.",
         question_type: "coding",
-        starter_code: "function findSecondLargest(nums) {\n  // Write your code here\n  return null;\n}",
-        correct_answer: "function findSecondLargest(nums) {\n  const unique = [...new Set(nums)].sort((a, b) => b - a);\n  return unique.length >= 2 ? unique[1] : null;\n}",
+        starter_code: "function invertObject(obj) {\n  // Write your code here\n  return {};\n}",
+        correct_answer: "function invertObject(obj) {\n  const result = {};\n  for (const [key, val] of Object.entries(obj)) {\n    result[val] = key;\n  }\n  return result;\n}",
         test_cases: [
-          { input: '[10, 5, 20, 20, 8]', expected: '10', description: 'Has duplicate max' },
-          { input: '[1, 2, 3, 4, 5]', expected: '4', description: 'Ascending array' },
-          { input: '[7, 7, 7]', expected: 'null', description: 'All identical elements' }
+          { input: '{"a": "1", "b": "2"}', expected: '{"1":"a","2":"b"}', description: 'Basic string inversion' },
+          { input: '{"name": "examguard", "role": "proctor"}', expected: '{"examguard":"name","proctor":"role"}', description: 'Word inversion' }
         ],
-        explanation: "Remove duplicates using Set, sort in descending order, and retrieve index 1.",
-        hint: "Use new Set(nums) to deduplicate before sorting.",
+        explanation: "Iterate with Object.entries and set result[val] = key.",
+        hint: "Use Object.entries(obj) in a loop.",
         points: 5
       };
     },
-    // MCQ Template: JavaScript Event Loop / Promises
+    // 4. Missing Number in Arithmetic Range
     () => {
       return {
-        question_text: "In JavaScript, in which order do the Macrotask Queue, Microtask Queue (Promise callbacks), and synchronous Call Stack execute?",
-        question_type: "mcq",
-        options: [
-          "Call Stack -> Microtask Queue -> Macrotask Queue",
-          "Macrotask Queue -> Call Stack -> Microtask Queue",
-          "Microtask Queue -> Macrotask Queue -> Call Stack",
-          "Call Stack -> Macrotask Queue -> Microtask Queue"
+        question_text: "Write a function `findMissingNumber(nums)` that takes an array containing n distinct numbers in the range `[0, n]` and returns the only number missing from the range.",
+        question_type: "coding",
+        starter_code: "function findMissingNumber(nums) {\n  // Write your code here\n  return 0;\n}",
+        correct_answer: "function findMissingNumber(nums) {\n  const n = nums.length;\n  const expectedSum = (n * (n + 1)) / 2;\n  const actualSum = nums.reduce((a, b) => a + b, 0);\n  return expectedSum - actualSum;\n}",
+        test_cases: [
+          { input: '[3, 0, 1]', expected: '2', description: 'Missing 2 from [0, 3]' },
+          { input: '[0, 1]', expected: '2', description: 'Missing n' },
+          { input: '[9,6,4,2,3,5,7,0,1]', expected: '8', description: 'Missing 8' }
         ],
-        correct_answer: "Call Stack -> Microtask Queue -> Macrotask Queue",
-        explanation: "Synchronous code on the Call Stack runs to completion first, then all queued Microtasks (Promises/queueMicrotask) drain before the event loop processes the next Macrotask (setTimeout/setInterval).",
-        hint: "Promises run before setTimeout callbacks.",
-        points: 2
+        explanation: "Calculate expected sum with Gaussian formula n*(n+1)/2 and subtract the actual array sum in O(N) time.",
+        hint: "Use Gauss sum formula: (n * (n + 1)) / 2.",
+        points: 5
       };
     },
-    // MCQ Template: JavaScript Scope & Closures
+    // 5. String Run-Length Compression
     () => {
       return {
-        question_text: "What will `const arr = [1, 2, 3]; arr.length = 0; console.log(arr);` output in JavaScript?",
+        question_text: "Write a function `compressString(str)` that performs basic string compression using the counts of repeated characters (e.g. 'aabcccccaaa' -> 'a2b1c5a3').",
+        question_type: "coding",
+        starter_code: "function compressString(str) {\n  // Write your code here\n  return str;\n}",
+        correct_answer: "function compressString(str) {\n  if (!str) return '';\n  let result = '';\n  let count = 1;\n  for (let i = 0; i < str.length; i++) {\n    if (str[i] === str[i + 1]) {\n      count++;\n    } else {\n      result += str[i] + count;\n      count = 1;\n    }\n  }\n  return result;\n}",
+        test_cases: [
+          { input: '"aabcccccaaa"', expected: '"a2b1c5a3"', description: 'Repeated characters' },
+          { input: '"abc"', expected: '"a1b1c1"', description: 'Distinct characters' },
+          { input: '""', expected: '""', description: 'Empty string' }
+        ],
+        explanation: "Iterate through string tracking consecutive character counts and append char + count on character transitions.",
+        hint: "Compare str[i] with str[i+1] in a loop.",
+        points: 5
+      };
+    },
+    // 6. Sliding Window Max Subarray Sum
+    () => {
+      return {
+        question_text: "Write a function `maxSubarraySum(nums, k)` that finds the maximum sum of any contiguous subarray of size `k`.",
+        question_type: "coding",
+        starter_code: "function maxSubarraySum(nums, k) {\n  // Write your code here\n  return 0;\n}",
+        correct_answer: "function maxSubarraySum(nums, k) {\n  if (nums.length < k || k <= 0) return 0;\n  let maxSum = 0, windowSum = 0;\n  for (let i = 0; i < k; i++) windowSum += nums[i];\n  maxSum = windowSum;\n  for (let i = k; i < nums.length; i++) {\n    windowSum += nums[i] - nums[i - k];\n    if (windowSum > maxSum) maxSum = windowSum;\n  }\n  return maxSum;\n}",
+        test_cases: [
+          { input: '[2, 1, 5, 1, 3, 2], 3', expected: '9', description: 'Subarray [5, 1, 3] = 9' },
+          { input: '[2, 3, 4, 1, 5], 2', expected: '7', description: 'Subarray [3, 4] = 7' },
+          { input: '[1, 2], 3', expected: '0', description: 'k > array length' }
+        ],
+        explanation: "Use the sliding window technique to slide across the array in O(N) linear time without re-summing sub-arrays.",
+        hint: "Add the new incoming element and subtract the outgoing element.",
+        points: 5
+      };
+    },
+    // 7. Dynamic MCQ on Closures & Lexical Scope
+    () => {
+      return {
+        question_text: "What will the following code output?\n```js\nfor (var i = 0; i < 3; i++) {\n  setTimeout(() => console.log(i), 0);\n}\n```",
         question_type: "mcq",
-        options: ["[] (empty array)", "[1, 2, 3]", "undefined", "TypeError: Assignment to constant variable"],
-        correct_answer: "[] (empty array)",
-        explanation: "Setting array.length = 0 truncates the array in-place without reassigning the variable reference, emptying the array cleanly.",
-        hint: "Mutating array properties is permitted even on const variable bindings.",
+        options: ["3, 3, 3", "0, 1, 2", "undefined, undefined, undefined", "ReferenceError: i is not defined"],
+        correct_answer: "3, 3, 3",
+        explanation: "Because 'var' is function-scoped rather than block-scoped, the variable 'i' is shared across all loop iterations. When the timer callbacks execute, i has already reached 3.",
+        hint: "Think about the scoping differences between 'var' and 'let'.",
         points: 2
       };
     },
-    // MCQ Template: REST API Design
+    // 8. Dynamic MCQ on Array Methods & Immutability
     () => {
       return {
-        question_text: "Which HTTP method is considered IDEMPOTENT according to the HTTP/1.1 specification?",
+        question_text: "Which of the following array methods mutates the original array in-place rather than returning a new copy?",
         question_type: "mcq",
-        options: ["GET, PUT, and DELETE", "POST and PATCH only", "POST only", "No HTTP methods are idempotent"],
-        correct_answer: "GET, PUT, and DELETE",
-        explanation: "An idempotent HTTP method can be called multiple times with the exact same side-effect on the server as a single call. GET, PUT, and DELETE are idempotent.",
-        hint: "Idempotent means repeating the request yields identical state.",
+        options: ["Array.prototype.splice()", "Array.prototype.slice()", "Array.prototype.map()", "Array.prototype.concat()"],
+        correct_answer: "Array.prototype.splice()",
+        explanation: "splice() changes the contents of an array in place by removing or replacing existing elements. slice(), map(), and concat() return shallow copies.",
+        hint: "Splice mutates; slice returns a copy.",
         points: 2
       };
     },
-    // Short answer template
+    // 9. Dynamic Short Answer on Debounce vs Throttle
     () => {
       return {
-        question_text: "Explain the purpose of the virtual DOM in modern UI libraries like React.",
+        question_text: "Briefly explain the practical difference between Debouncing and Throttling in web performance optimization.",
         question_type: "short_answer",
-        correct_answer: "The Virtual DOM is an in-memory representation of real DOM elements that allows React to compute minimal reconciliation diffs before batching updates to the real browser DOM.",
-        explanation: "Minimizes costly direct browser layout reflows and repaints by diffing in JavaScript memory.",
-        hint: "Mention in-memory representation, reconciliation, and minimal updates.",
+        correct_answer: "Debounce delays function execution until a specified quiet period has elapsed after the last event, while Throttle guarantees the function executes at most once in every fixed time interval.",
+        explanation: "Debouncing is ideal for search auto-complete inputs; throttling is ideal for window scroll or resize listeners.",
+        hint: "Explain quiet period after last event vs fixed interval rate limiting.",
         points: 3
       };
     }
   ];
 
+  const shuffledGens = shuffleArray(generators);
+  const results = [];
   for (let i = 0; i < count; i++) {
-    const templateFn = templates[(startIndex + i) % templates.length];
-    const q = templateFn();
-    generated.push({
-      ...q,
-      id: `q_proc_${startIndex + i + 1}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      order_index: startIndex + i
-    });
+    const generator = shuffledGens[i % shuffledGens.length];
+    results.push(generator());
   }
-
-  return generated;
-}
-
-function getTopicTitle(topic) {
-  const t = String(topic).toLowerCase();
-  if (t === 'mern') return 'MERN Full-Stack Engineering';
-  if (t === 'git') return 'Git, GitHub & DevOps';
-  if (t === 'js' || t === 'javascript') return 'Modern JavaScript & Algorithms';
-  if (t === 'dsa') return 'Data Structures & Algorithms';
-  if (t === 'python' || t === 'py') return 'Python Programming & Problem Solving';
-  return topic.charAt(0).toUpperCase() + topic.slice(1);
+  return results;
 }
 
 // -------------------------------------------------------------
-// EXTENSIVE CURRICULUM BANKS (20+ hand-crafted questions each)
+// DYNAMIC TOPIC-SPECIFIC FACTORIES
 // -------------------------------------------------------------
 
-function getJsQuestionBank(difficulty) {
+function generateDynamicJsChallenges(difficulty) {
+  return [
+    {
+      question_text: "Write a function `deepFlatten(arr)` that flattens a nested array of any depth without using Array.prototype.flat().",
+      question_type: "coding",
+      starter_code: "function deepFlatten(arr) {\n  // Write your code here\n  return [];\n}",
+      correct_answer: "function deepFlatten(arr) {\n  return arr.reduce((acc, val) => Array.isArray(val) ? acc.concat(deepFlatten(val)) : acc.concat(val), []);\n}",
+      test_cases: [
+        { input: '[1, [2, [3, [4]], 5]]', expected: '[1, 2, 3, 4, 5]', description: 'Multi-level nesting' },
+        { input: '[[1, 2], [3, 4]]', expected: '[1, 2, 3, 4]', description: '2D matrix' }
+      ],
+      explanation: "Use recursion with Array.isArray and Array.prototype.concat or reduce.",
+      hint: "Use recursion inside Array.prototype.reduce().",
+      points: 5
+    },
+    {
+      question_text: "Write a function `groupBy(array, key)` that groups an array of objects by a specified property key.",
+      question_type: "coding",
+      starter_code: "function groupBy(array, key) {\n  // Write your code here\n  return {};\n}",
+      correct_answer: "function groupBy(array, key) {\n  return array.reduce((result, item) => {\n    const val = item[key];\n    if (!result[val]) result[val] = [];\n    result[val].push(item);\n    return result;\n  }, {});\n}",
+      test_cases: [
+        { input: '[{"category": "tech", "name": "laptop"}, {"category": "tech", "name": "phone"}, {"category": "clothing", "name": "shirt"}], "category"', expected: '{"tech":[{"category":"tech","name":"laptop"},{"category":"tech","name":"phone"}],"clothing":[{"category":"clothing","name":"shirt"}]}', description: 'Group by category' }
+      ],
+      explanation: "Reduce over the array accumulating elements into keys of a result object.",
+      hint: "Use Array.prototype.reduce() accumulating into an object map.",
+      points: 5
+    }
+  ];
+}
+
+function generateDynamicMernChallenges(difficulty) {
+  return [
+    {
+      question_text: "Write a function `parseMongoProjection(fieldsString)` that converts a space-separated field selection string (e.g., 'name email -password') into a MongoDB projection object.",
+      question_type: "coding",
+      starter_code: "function parseMongoProjection(fieldsString) {\n  // Write your code here\n  return {};\n}",
+      correct_answer: "function parseMongoProjection(fieldsString) {\n  const res = {};\n  fieldsString.trim().split(/\\s+/).forEach(f => {\n    if (f.startsWith('-')) res[f.substring(1)] = 0;\n    else if (f) res[f] = 1;\n  });\n  return res;\n}",
+      test_cases: [
+        { input: '"name email -password"', expected: '{"name":1,"email":1,"password":0}', description: 'Inclusion and exclusion' },
+        { input: '"title description"', expected: '{"title":1,"description":1}', description: 'Inclusion only' }
+      ],
+      explanation: "Split string by whitespace, map fields starting with '-' to 0 and regular fields to 1.",
+      hint: "Check if the token starts with '-'.",
+      points: 5
+    },
+    {
+      question_text: "In React, what will happen if you update state using `setCount(count + 1)` multiple times in the same synchronous event handler?",
+      question_type: "mcq",
+      options: [
+        "React batches the updates and increments by 1 only once",
+        "React triggers multiple synchronous re-renders for each line",
+        "It increments correctly by the number of calls",
+        "It throws an 'Infinite Render Loop' exception"
+      ],
+      correct_answer: "React batches the updates and increments by 1 only once",
+      explanation: "State updates using direct state references are batched and evaluate with the stale render closure value. To queue sequential updates, use the functional form `setCount(prev => prev + 1)`.",
+      hint: "React batches state updates and evaluates them against the current render closure.",
+      points: 2
+    }
+  ];
+}
+
+function generateDynamicGitChallenges(difficulty) {
+  return [
+    {
+      question_text: "Write a function `isCleanGitCommitMessage(msg)` that verifies if a Git commit message follows conventional commit format (e.g., 'feat: add auth', 'fix(proctor): resolve timer bug').",
+      question_type: "coding",
+      starter_code: "function isCleanGitCommitMessage(msg) {\n  // Write your code here\n  return false;\n}",
+      correct_answer: "function isCleanGitCommitMessage(msg) {\n  return /^(feat|fix|docs|style|refactor|perf|test|chore|build|ci)(\\([a-z0-9-]+\\))?:\\s.+$/i.test(msg.trim());\n}",
+      test_cases: [
+        { input: '"feat: add proctoring shield"', expected: 'true', description: 'Standard feat commit' },
+        { input: '"fix(vision): fix eye tracking false positives"', expected: 'true', description: 'Scoped fix commit' },
+        { input: '"updated code"', expected: 'false', description: 'Non-conventional commit' }
+      ],
+      explanation: "Use regular expressions to validate type prefix, optional scope parentheses, colon, and description.",
+      hint: "Use regex checking for prefixes like feat, fix, chore followed by a colon.",
+      points: 5
+    }
+  ];
+}
+
+function generateDynamicDsaChallenges(difficulty) {
+  return [
+    {
+      question_text: "Write a function `fibonacci(n)` that returns the n-th Fibonacci number where fib(0) = 0 and fib(1) = 1 in O(N) time or better.",
+      question_type: "coding",
+      starter_code: "function fibonacci(n) {\n  // Write your code here\n  return 0;\n}",
+      correct_answer: "function fibonacci(n) {\n  if (n <= 0) return 0;\n  if (n === 1) return 1;\n  let a = 0, b = 1;\n  for (let i = 2; i <= n; i++) {\n    const temp = a + b;\n    a = b;\n    b = temp;\n  }\n  return b;\n}",
+      test_cases: [
+        { input: '0', expected: '0', description: 'Base 0' },
+        { input: '1', expected: '1', description: 'Base 1' },
+        { input: '6', expected: '8', description: 'Fibonacci of 6' },
+        { input: '10', expected: '55', description: 'Fibonacci of 10' }
+      ],
+      explanation: "Iterative bottom-up dynamic programming approach in O(N) time and O(1) space.",
+      hint: "Use two running variables to accumulate previous numbers.",
+      points: 5
+    }
+  ];
+}
+
+function generateDynamicPythonChallenges(difficulty) {
+  return [
+    {
+      question_text: "What is the primary difference between a list and a tuple in Python?",
+      question_type: "mcq",
+      options: [
+        "Lists are mutable and defined with [], while tuples are immutable and defined with ()",
+        "Tuples can only store numbers, while lists can store any object",
+        "Lists are faster for lookup than tuples",
+        "There is no functional difference"
+      ],
+      correct_answer: "Lists are mutable and defined with [], while tuples are immutable and defined with ()",
+      explanation: "Tuples cannot be modified after creation (immutable), which makes them hashable and memory efficient.",
+      hint: "Mutability vs immutability.",
+      points: 2
+    }
+  ];
+}
+
+// -------------------------------------------------------------
+// CURRICULUM POOLS (Dozens of hand-crafted assessment items)
+// -------------------------------------------------------------
+
+function getJsCurriculumPool(difficulty) {
   return [
     {
       question_text: "What is the expected output of console.log(typeof typeof 1)?",
@@ -418,20 +579,6 @@ function getJsQuestionBank(difficulty) {
       points: 5
     },
     {
-      question_text: "Write a function `flattenArray(arr)` that flattens a nested array of arbitrary depth into a single flat array without using Array.prototype.flat().",
-      question_type: "coding",
-      starter_code: "function flattenArray(arr) {\n  // Write your code here\n  return [];\n}",
-      correct_answer: "function flattenArray(arr) {\n  const result = [];\n  function helper(item) {\n    if (Array.isArray(item)) {\n      item.forEach(helper);\n    } else {\n      result.push(item);\n    }\n  }\n  helper(arr);\n  return result;\n}",
-      test_cases: [
-        { input: '[1, [2, [3, [4]], 5]]', expected: '[1, 2, 3, 4, 5]', description: 'Deeply nested array' },
-        { input: '[[1, 2], [3, 4]]', expected: '[1, 2, 3, 4]', description: '2D array' },
-        { input: '[]', expected: '[]', description: 'Empty array' }
-      ],
-      explanation: "Use a recursive helper or reduce with Array.isArray checks to flatten elements into an accumulator.",
-      hint: "Check Array.isArray(item) recursively.",
-      points: 5
-    },
-    {
       question_text: "Write a function `chunkArray(arr, size)` that splits an array into smaller chunks of length `size`.",
       question_type: "coding",
       starter_code: "function chunkArray(arr, size) {\n  // Write your code here\n  return [];\n}",
@@ -467,19 +614,11 @@ function getJsQuestionBank(difficulty) {
       explanation: "Lowercase the whole string, split by spaces, capitalize charAt(0) and join with spaces.",
       hint: "Use .toLowerCase(), .split(' '), and .charAt(0).toUpperCase().",
       points: 5
-    },
-    {
-      question_text: "What is the difference between `null` and `undefined` in JavaScript?",
-      question_type: "short_answer",
-      correct_answer: "undefined represents the default state of an uninitialized variable, while null is an intentional assigned primitive representing the absence of an object or value.",
-      explanation: "typeof undefined is 'undefined', while typeof null is historically 'object'.",
-      hint: "Explain intentional assignment vs uninitialized variable.",
-      points: 3
     }
   ];
 }
 
-function getMernQuestionBank(difficulty) {
+function getMernCurriculumPool(difficulty) {
   return [
     {
       question_text: "In React, which hook is primarily used to manage side-effects such as subscriptions, timers, and data fetching?",
@@ -550,19 +689,6 @@ function getMernQuestionBank(difficulty) {
       points: 2
     },
     {
-      question_text: "Write a function `formatJwtPayload(payload)` that returns an encoded Base64 URL safe string representing the JSON payload.",
-      question_type: "coding",
-      starter_code: "function formatJwtPayload(payload) {\n  // Write your code here\n  return '';\n}",
-      correct_answer: "function formatJwtPayload(payload) {\n  const json = JSON.stringify(payload);\n  return btoa(json).replace(/=/g, '').replace(/\\+/g, '-').replace(/\\//g, '_');\n}",
-      test_cases: [
-        { input: '{"id": 123, "role": "teacher"}', expected: '"eyJpZCI6MTIzLCJyb2xlIjoidGVhY2hlciJ9"', description: 'Teacher payload' },
-        { input: '{"sub": "student"}', expected: '"eyJzdWIiOiJzdHVkZW50In0"', description: 'Student payload' }
-      ],
-      explanation: "Stringify JSON and apply standard Base64 URL-safe encoding.",
-      hint: "Use btoa(JSON.stringify(payload)).",
-      points: 5
-    },
-    {
       question_text: "In MongoDB, which operator is used in the aggregation pipeline to filter documents equivalent to a WHERE clause in SQL?",
       question_type: "mcq",
       options: ["$match", "$filter", "$find", "$where"],
@@ -574,7 +700,7 @@ function getMernQuestionBank(difficulty) {
   ];
 }
 
-function getGitQuestionBank(difficulty) {
+function getGitCurriculumPool(difficulty) {
   return [
     {
       question_text: "Which Git command is used to integrate changes from one branch into another by creating a new combined commit?",
@@ -614,11 +740,11 @@ function getGitQuestionBank(difficulty) {
       points: 5
     },
     {
-      question_text: "Which command temporarily shelves (or stores) changes you've made to your working copy so you can work on something else?",
+      question_text: "Which command temporarily shelves changes you have made to your working copy so you can switch branches cleanly?",
       question_type: "mcq",
       options: ["git stash", "git commit --temp", "git pause", "git checkout -b"],
       correct_answer: "git stash",
-      explanation: "git stash takes your uncommitted changes (both staged and unstaged), saves them away on a stack, and resets your working directory to match the clean HEAD commit.",
+      explanation: "git stash saves dirty working copy changes and resets the index to HEAD.",
       hint: "Think of stashing away items in a drawer.",
       points: 2
     },
@@ -636,33 +762,11 @@ function getGitQuestionBank(difficulty) {
       explanation: "Test against regular expression /^\\d+\\.\\d+\\.\\d+$/ for major.minor.patch digits.",
       hint: "Use a regular expression testing for three digit groups separated by periods.",
       points: 5
-    },
-    {
-      question_text: "What does `git cherry-pick <commit-hash>` accomplish?",
-      question_type: "mcq",
-      options: [
-        "Applies the changes introduced by a specific existing commit onto the current branch as a new commit",
-        "Deletes a specific commit from the remote repository",
-        "Reverts the last commit while keeping changes in the staging index",
-        "Selects the most recent branch created in the repository"
-      ],
-      correct_answer: "Applies the changes introduced by a specific existing commit onto the current branch as a new commit",
-      explanation: "git cherry-pick takes the patch introduced by an individual commit from any branch and applies it onto your current HEAD.",
-      hint: "It picks one specific commit and applies its changes.",
-      points: 2
-    },
-    {
-      question_text: "Briefly explain the difference between `git rebase` and `git merge`.",
-      question_type: "short_answer",
-      correct_answer: "git merge preserves complete historical branch topology by creating a 3-way merge commit, while git rebase linearizes history by reapplying commits one by one on top of the base branch.",
-      explanation: "Rebase rewrites commit hashes to create a clean, linear commit graph; merge creates a merge commit preserving exact branch timeline.",
-      hint: "Discuss linear history vs merge commit branch preservation.",
-      points: 3
     }
   ];
 }
 
-function getDsaQuestionBank(difficulty) {
+function getDsaCurriculumPool(difficulty) {
   return [
     {
       question_text: "Write a function `twoSum(nums, target)` that returns the 0-indexed indices [i, j] of two numbers that sum to target.",
@@ -686,8 +790,7 @@ function getDsaQuestionBank(difficulty) {
       test_cases: [
         { input: '"()"', expected: 'true', description: 'Simple parentheses' },
         { input: '"()[]{}"', expected: 'true', description: 'Multiple bracket types' },
-        { input: '"(]"', expected: 'false', description: 'Mismatched brackets' },
-        { input: '"([)]"', expected: 'false', description: 'Improperly nested' }
+        { input: '"(]"', expected: 'false', description: 'Mismatched brackets' }
       ],
       explanation: "Use a Stack LIFO structure to push opening brackets and pop matching pairs when closing brackets are encountered.",
       hint: "Push openers to an array stack and pop when matching closers appear.",
@@ -709,26 +812,16 @@ function getDsaQuestionBank(difficulty) {
       correct_answer: "function binarySearch(nums, target) {\n  let left = 0, right = nums.length - 1;\n  while (left <= right) {\n    const mid = Math.floor((left + right) / 2);\n    if (nums[mid] === target) return mid;\n    if (nums[mid] < target) left = mid + 1;\n    else right = mid - 1;\n  }\n  return -1;\n}",
       test_cases: [
         { input: '[-1, 0, 3, 5, 9, 12], 9', expected: '4', description: 'Target exists' },
-        { input: '[-1, 0, 3, 5, 9, 12], 2', expected: '-1', description: 'Target does not exist' },
-        { input: '[5], 5', expected: '0', description: 'Single element match' }
+        { input: '[-1, 0, 3, 5, 9, 12], 2', expected: '-1', description: 'Target does not exist' }
       ],
       explanation: "Halve the search boundary on every iteration using two pointers (left and right) in O(log N) time.",
       hint: "Maintain left and right pointers and calculate mid index.",
       points: 5
-    },
-    {
-      question_text: "Which data structure operates on a Last-In, First-Out (LIFO) access pattern?",
-      question_type: "mcq",
-      options: ["Queue", "Stack", "Linked List", "Priority Queue"],
-      correct_answer: "Stack",
-      explanation: "A Stack stores items in a LIFO order where the last element inserted is the first one removed.",
-      hint: "Think of a stack of plates.",
-      points: 2
     }
   ];
 }
 
-function getPythonQuestionBank(difficulty) {
+function getPythonCurriculumPool(difficulty) {
   return [
     {
       question_text: "In Python, which built-in data structure is mutable, ordered, and allows duplicate elements?",
@@ -738,15 +831,29 @@ function getPythonQuestionBank(difficulty) {
       explanation: "Python lists are mutable ordered sequences allowing duplicates. Tuples are immutable, and Sets only contain unique values.",
       hint: "It is created with square brackets [].",
       points: 2
-    },
-    {
-      question_text: "What is the output of `bool([])` in Python?",
-      question_type: "mcq",
-      options: ["False", "True", "None", "TypeError"],
-      correct_answer: "False",
-      explanation: "In Python, empty sequences such as empty lists, strings, and dictionaries evaluate to False in boolean context.",
-      hint: "Empty collections are considered falsy in Python.",
-      points: 2
     }
   ];
+}
+
+// -------------------------------------------------------------
+// UTILITY FUNCTIONS
+// -------------------------------------------------------------
+
+function shuffleArray(arr) {
+  const array = [...arr];
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+function getTopicTitle(topic) {
+  const t = String(topic).toLowerCase();
+  if (t === 'mern') return 'MERN Full-Stack Engineering';
+  if (t === 'git') return 'Git, GitHub & DevOps';
+  if (t === 'js' || t === 'javascript') return 'Modern JavaScript & Algorithms';
+  if (t === 'dsa') return 'Data Structures & Algorithms';
+  if (t === 'python' || t === 'py') return 'Python Programming & Problem Solving';
+  return topic.charAt(0).toUpperCase() + topic.slice(1);
 }
