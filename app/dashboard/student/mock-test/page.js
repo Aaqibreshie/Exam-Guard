@@ -17,6 +17,8 @@ export default function MockTestPage() {
   const [questionCount, setQuestionCount] = useState(5);
   const [duration, setDuration] = useState(15);
   const [mode, setMode] = useState('practice'); // 'practice' | 'proctored'
+  const [userApiKey, setUserApiKey] = useState('');
+  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
 
   // Test Execution State
   const [isGenerating, setIsGenerating] = useState(false);
@@ -33,12 +35,16 @@ export default function MockTestPage() {
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [mockHistory, setMockHistory] = useState([]);
 
-  // Load past mock test history from localStorage on mount
+  // Load past mock test history and saved API key from localStorage on mount
   useEffect(() => {
     try {
       const saved = localStorage.getItem('examguard_mock_history');
       if (saved) {
         setMockHistory(JSON.parse(saved));
+      }
+      const savedKey = localStorage.getItem('examguard_gemini_key');
+      if (savedKey) {
+        setUserApiKey(savedKey);
       }
     } catch (e) {
       console.warn('Could not load mock history:', e);
@@ -69,6 +75,10 @@ export default function MockTestPage() {
     setGenError('');
 
     try {
+      if (userApiKey) {
+        try { localStorage.setItem('examguard_gemini_key', userApiKey.trim()); } catch (e) {}
+      }
+
       const res = await fetch('/api/student/generate-mock', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -78,7 +88,8 @@ export default function MockTestPage() {
           difficulty,
           format,
           count: questionCount,
-          duration
+          duration,
+          userApiKey: userApiKey.trim()
         })
       });
 
@@ -993,15 +1004,41 @@ export default function MockTestPage() {
         </div>
 
         {/* Questions & Duration Controls */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '32px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
           <div>
-            <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '8px' }}>
-              Question Count: <span style={{ color: '#059669' }}>{questionCount} Questions</span>
-            </label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', margin: 0 }}>
+                4. Question Count: <span style={{ color: '#059669' }}>{questionCount} Questions</span>
+              </label>
+            </div>
+            
+            {/* Quick Count Pills */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px', marginBottom: '10px' }}>
+              {[3, 5, 8, 10].map((num) => (
+                <button
+                  key={num}
+                  type="button"
+                  onClick={() => setQuestionCount(num)}
+                  style={{
+                    padding: '8px 0',
+                    borderRadius: '8px',
+                    fontSize: '0.8rem',
+                    fontWeight: 700,
+                    border: questionCount === num ? '2px solid #059669' : '1px solid #e2e8f0',
+                    background: questionCount === num ? '#ecfdf5' : '#f8fafc',
+                    color: questionCount === num ? '#059669' : '#475569',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {num} Qs
+                </button>
+              ))}
+            </div>
+
             <input
               type="range"
               min="3"
-              max="10"
+              max="12"
               step="1"
               value={questionCount}
               onChange={(e) => setQuestionCount(parseInt(e.target.value))}
@@ -1010,9 +1047,35 @@ export default function MockTestPage() {
           </div>
 
           <div>
-            <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '8px' }}>
-              Time Limit: <span style={{ color: '#059669' }}>{duration} Minutes</span>
-            </label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', margin: 0 }}>
+                5. Time Limit: <span style={{ color: '#059669' }}>{duration} Minutes</span>
+              </label>
+            </div>
+
+            {/* Quick Duration Pills */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px', marginBottom: '10px' }}>
+              {[10, 15, 20, 30].map((mins) => (
+                <button
+                  key={mins}
+                  type="button"
+                  onClick={() => setDuration(mins)}
+                  style={{
+                    padding: '8px 0',
+                    borderRadius: '8px',
+                    fontSize: '0.8rem',
+                    fontWeight: 700,
+                    border: duration === mins ? '2px solid #059669' : '1px solid #e2e8f0',
+                    background: duration === mins ? '#ecfdf5' : '#f8fafc',
+                    color: duration === mins ? '#059669' : '#475569',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {mins}m
+                </button>
+              ))}
+            </div>
+
             <input
               type="range"
               min="5"
@@ -1023,6 +1086,51 @@ export default function MockTestPage() {
               style={{ width: '100%', accentColor: '#059669' }}
             />
           </div>
+        </div>
+
+        {/* Optional Gemini API Key Drawer */}
+        <div style={{ marginBottom: '24px', borderTop: '1px solid #f1f5f9', paddingTop: '16px' }}>
+          <button
+            type="button"
+            onClick={() => setShowApiKeyInput(!showApiKeyInput)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#64748b',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: 0
+            }}
+          >
+            <span>⚙️</span>
+            <span>{showApiKeyInput ? 'Hide Gemini AI Key Settings' : 'Custom Gemini AI Key (Optional)'}</span>
+            <span style={{ fontSize: '0.7rem', color: userApiKey ? '#059669' : '#94a3b8' }}>
+              {userApiKey ? '• Active Key Saved' : '• Using Dynamic Procedural Engine'}
+            </span>
+          </button>
+
+          {showApiKeyInput && (
+            <div style={{ marginTop: '12px', padding: '14px', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '6px' }}>
+                Google Gemini API Key (Optional):
+              </label>
+              <input
+                type="password"
+                value={userApiKey}
+                onChange={(e) => setUserApiKey(e.target.value)}
+                placeholder="AIzaSy..."
+                className="form-input"
+                style={{ width: '100%', fontSize: '0.85rem', marginBottom: '6px' }}
+              />
+              <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748b' }}>
+                When provided, ExamGuard will call Google's Gemini 2.0/1.5 Flash models to generate fresh questions for any custom topic. If omitted, ExamGuard uses its built-in procedural synthesis engine.
+              </p>
+            </div>
+          )}
         </div>
 
         {genError && (
