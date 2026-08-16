@@ -11,7 +11,7 @@ export default function CreateExamPage() {
   
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [subject, setSubject] = useState('mern');
+  const [subject, setSubject] = useState('git');
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
@@ -155,8 +155,7 @@ export default function CreateExamPage() {
                 onChange={(e) => setSubject(e.target.value)}
                 className="form-select"
               >
-                <option value="mern">MERN Stack (React, Node, Express, MongoDB)</option>
-                <option value="git">Git & GitHub Version Control</option>
+                <option value="git">Git</option>
               </select>
             </div>
             
