@@ -3,6 +3,7 @@
 import React, { useState, useEffect, use, Fragment } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
+import TeacherGrader from '@/components/TeacherGrader';
 
 export default function ExamResultsPage({ params }) {
   const { id } = use(params);
@@ -329,6 +330,14 @@ export default function ExamResultsPage({ params }) {
                               ))}
                             </div>
                           )}
+
+                          <div style={{ marginTop: '24px', borderTop: '1px solid #eaecf0', paddingTop: '20px' }}>
+                            <TeacherGrader 
+                              submissionId={sub.id} 
+                              examId={exam.id} 
+                              onGradeUpdated={fetchResults}
+                            />
+                          </div>
                         </td>
                       </tr>
                     )}
