@@ -11,7 +11,7 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('student');
-  const [subject, setSubject] = useState('git');
+  const [subject, setSubject] = useState('mern');
   const [batch, setBatch] = useState('Batch 1 (Morning)');
   
   // OTP state (6 digits)
@@ -379,6 +379,7 @@ export default function Signup() {
                       className="form-select"
                       required
                     >
+                      <option value="mern">MERN Stack (MongoDB, Express, React, Node)</option>
                       <option value="git">Git</option>
                     </select>
                   </div>
