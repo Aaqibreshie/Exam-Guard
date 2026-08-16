@@ -373,16 +373,29 @@ export default function TeacherExamDetailPage({ params }) {
     if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
       try {
         const parsed = JSON.parse(trimmed);
-        const list = Array.isArray(parsed) ? parsed : [parsed];
-        return list.map(item => ({
-          question_text: item.question || item.question_text || item.text,
-          question_type: (item.type || item.question_type || (item.starter_code || item.test_cases ? 'coding' : item.options ? 'mcq' : 'short_answer')).toLowerCase(),
+        
+        let rawList = [];
+        if (Array.isArray(parsed)) {
+          rawList = parsed;
+        } else if (typeof parsed === 'object' && parsed !== null) {
+          if (Array.isArray(parsed.mcqs)) rawList = [...rawList, ...parsed.mcqs];
+          if (Array.isArray(parsed.coding_problems)) rawList = [...rawList, ...parsed.coding_problems];
+          if (Array.isArray(parsed.questions)) rawList = [...rawList, ...parsed.questions];
+          
+          if (rawList.length === 0) {
+             rawList = [parsed];
+          }
+        }
+
+        return rawList.map(item => ({
+          question_text: item.question || item.question_text || item.text || item.problem || '',
+          question_type: (item.type || item.question_type || (item.starter_code || item.test_cases || item.problem ? 'coding' : item.options ? 'mcq' : 'short_answer')).toLowerCase(),
           options: item.options || null,
           correct_answer: String(item.answer || item.correct_answer || item.correct || ''),
           starter_code: item.starter_code || '',
           test_cases: item.test_cases || [],
-          points: parseInt(item.points || item.marks || 1)
-        }));
+          points: parseInt(item.points || item.marks || (item.starter_code || item.problem ? 5 : 1))
+        })).filter(q => q.question_text && q.question_text.trim().length > 0);
       } catch (err) {
         // Fallback to text parsing
       }
