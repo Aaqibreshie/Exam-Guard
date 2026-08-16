@@ -40,6 +40,12 @@ export default function TakeExamPage({ params }) {
   const antiCheatRef = useRef(null);
   const submissionRef = useRef(null);
   const sidecarChannelRef = useRef(null);
+  const answersRef = useRef(answers);
+  const lastSavedAnswersRef = useRef({});
+
+  useEffect(() => {
+    answersRef.current = answers;
+  }, [answers]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -215,6 +221,46 @@ export default function TakeExamPage({ params }) {
       }
     };
   }, []);
+
+  // Background Auto-Save Heartbeat
+  useEffect(() => {
+    let saveTimer;
+    if (examStarted && !isCompleted && submissionRef.current) {
+      saveTimer = setInterval(async () => {
+        const currentAnswers = answersRef.current;
+        const lastSaved = lastSavedAnswersRef.current;
+        
+        // Check if anything has changed since last save
+        let isDirty = false;
+        for (const [qId, val] of Object.entries(currentAnswers)) {
+          if (lastSaved[qId] !== val) {
+            isDirty = true;
+            break;
+          }
+        }
+        
+        if (isDirty) {
+          try {
+            const res = await fetch('/api/student/auto-save', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                submission_id: submissionRef.current.id,
+                answers: currentAnswers
+              })
+            });
+            if (res.ok) {
+              lastSavedAnswersRef.current = { ...currentAnswers };
+              console.log('Progress auto-saved');
+            }
+          } catch (e) {
+            console.error('Auto-save failed', e);
+          }
+        }
+      }, 30000); // Check every 30 seconds
+    }
+    return () => clearInterval(saveTimer);
+  }, [examStarted, isCompleted]);
 
   const initAntiCheat = (subId, maxWarnings, initialWarnings = 0) => {
     antiCheatRef.current = new AntiCheatMonitor({

@@ -61,7 +61,7 @@ export async function POST(request) {
     }
 
     const body = await request.json()
-    const { title, description, subject, duration_minutes, start_time, end_time, max_warnings } = body
+    const { title, description, subject, duration_minutes, start_time, end_time, passcode, max_warnings } = body
 
     const { data: exam, error } = await supabase
       .from('exams')
@@ -72,6 +72,7 @@ export async function POST(request) {
         duration_minutes,
         start_time,
         end_time,
+        passcode,
         max_warnings,
         created_by: user.id
       })

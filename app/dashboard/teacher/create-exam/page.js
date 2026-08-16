@@ -15,6 +15,7 @@ export default function CreateExamPage() {
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+  const [passcode, setPasscode] = useState('');
   const [maxWarnings, setMaxWarnings] = useState(3);
   
   const [examFormat, setExamFormat] = useState('coding'); // 'coding' | 'hybrid' | 'mcq'
@@ -42,6 +43,7 @@ export default function CreateExamPage() {
           duration_minutes: parseInt(durationMinutes),
           start_time: startTime || null,
           end_time: endTime || null,
+          passcode: passcode || null,
           max_warnings: parseInt(maxWarnings),
           created_by: user.id,
           total_marks: 0,
@@ -196,6 +198,23 @@ export default function CreateExamPage() {
                 onChange={(e) => setEndTime(e.target.value)}
                 className="form-input"
               />
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
+            <div className="form-group">
+              <label htmlFor="passcode">Exam Passcode (Optional)</label>
+              <input 
+                id="passcode"
+                type="text" 
+                placeholder="e.g. 8421"
+                value={passcode} 
+                onChange={(e) => setPasscode(e.target.value)}
+                className="form-input"
+              />
+              <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '6px' }}>
+                If set, students must enter this PIN to start the exam.
+              </p>
             </div>
           </div>
 

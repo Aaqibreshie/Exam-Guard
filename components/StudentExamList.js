@@ -2,9 +2,36 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function StudentExamList({ exams = [], submissions = [], userBatch = '', userSubject = '' }) {
+  const router = useRouter();
   const [selectedTrack, setSelectedTrack] = useState('all'); // 'all' | 'mern' | 'git'
+  const [showPasscodeModal, setShowPasscodeModal] = useState(false);
+  const [selectedExamForPasscode, setSelectedExamForPasscode] = useState(null);
+  const [passcodeInput, setPasscodeInput] = useState('');
+  const [passcodeError, setPasscodeError] = useState('');
+
+  const handleStartAttempt = (exam, isResuming) => {
+    if (exam.passcode && !isResuming) {
+      setSelectedExamForPasscode(exam);
+      setShowPasscodeModal(true);
+      setPasscodeInput('');
+      setPasscodeError('');
+    } else {
+      router.push(`/dashboard/student/exam/${exam.id}`);
+    }
+  };
+
+  const handlePasscodeSubmit = (e) => {
+    e.preventDefault();
+    if (passcodeInput.trim() === selectedExamForPasscode.passcode) {
+      router.push(`/dashboard/student/exam/${selectedExamForPasscode.id}`);
+      setShowPasscodeModal(false);
+    } else {
+      setPasscodeError('Incorrect passcode. Please ask your instructor.');
+    }
+  };
 
   const mernCount = exams.filter(e => e.subject?.toLowerCase() === 'mern').length;
   const gitCount = exams.filter(e => e.subject?.toLowerCase() === 'git').length;
@@ -191,12 +218,12 @@ export default function StudentExamList({ exams = [], submissions = [], userBatc
                       </Link>
                     </div>
                   ) : (
-                    <Link 
-                      href={`/dashboard/student/exam/${exam.id}`} 
+                    <button 
+                      onClick={() => handleStartAttempt(exam, submission?.status === 'in_progress')}
                       className={`btn ${submission?.status === 'in_progress' ? 'btn-ghost' : 'btn-primary'} btn-md w-full`}
                     >
                       {submission?.status === 'in_progress' ? '🔄 Resume Exam Session' : '🚀 Start Monitored Exam'}
-                    </Link>
+                    </button>
                   )}
                 </div>
               </div>
@@ -225,6 +252,48 @@ export default function StudentExamList({ exams = [], submissions = [], userBatc
           </div>
         )}
       </div>
+
+      {showPasscodeModal && selectedExamForPasscode && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+        }}>
+          <div className="glass-card-static" style={{ padding: '30px', maxWidth: '400px', width: '90%' }}>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '8px' }}>🔐 Protected Exam</h3>
+            <p style={{ color: '#475569', fontSize: '0.9rem', marginBottom: '20px' }}>
+              Your instructor has protected this exam. Please enter the passcode provided to you.
+            </p>
+            <form onSubmit={handlePasscodeSubmit}>
+              <input
+                type="text"
+                autoFocus
+                placeholder="Enter Passcode..."
+                className="form-input"
+                style={{ marginBottom: '12px' }}
+                value={passcodeInput}
+                onChange={(e) => {
+                  setPasscodeInput(e.target.value);
+                  setPasscodeError('');
+                }}
+              />
+              {passcodeError && (
+                <div style={{ color: '#e11d48', fontSize: '0.85rem', marginBottom: '12px', fontWeight: 600 }}>
+                  {passcodeError}
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => setShowPasscodeModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary btn-sm">
+                  Verify & Enter
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
