@@ -597,13 +597,8 @@ export default function TakeExamPage({ params }) {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {filteredReview.map((q, idx) => {
-                let isCorrect = q.is_correct;
+                const isCorrect = q.is_correct;
                 const hasAnswered = q.student_answer && String(q.student_answer).trim() !== '';
-
-                const isManualGrading = (q.question_type === 'coding' || q.question_type === 'project') && (!q.test_cases || q.test_cases.length === 0);
-                if (isManualGrading) {
-                  isCorrect = null;
-                }
 
                 return (
                   <div

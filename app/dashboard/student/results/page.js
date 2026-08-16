@@ -234,14 +234,8 @@ export default function StudentResults() {
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                         {breakdown.map((q, idx) => {
-                          let isCorrect = q.is_correct;
+                          const isCorrect = q.is_correct;
                           const hasAnswered = q.student_answer && String(q.student_answer).trim() !== '';
-                          
-                          // If it's a coding/project question and has NO test cases, it cannot be auto-graded
-                          const isManualGrading = (q.question_type === 'coding' || q.question_type === 'project') && (!q.test_cases || q.test_cases.length === 0);
-                          if (isManualGrading) {
-                            isCorrect = null;
-                          }
 
                           return (
                             <div
