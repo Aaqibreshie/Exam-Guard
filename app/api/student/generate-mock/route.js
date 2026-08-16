@@ -44,15 +44,25 @@ export async function POST(request) {
       mockQuestions = [...mockQuestions, ...extraQuestions];
     }
 
-    // Double-randomize and assign unique IDs
-    const finalQuestions = mockQuestions.slice(0, targetCount).map((q, idx) => ({
-      ...q,
-      id: `q_${idx + 1}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-      order_index: idx
-    }));
+    // Distribute exactly 100 points among questions
+    const basePoints = Math.floor(100 / targetCount);
+    let remainder = 100 % targetCount;
+
+    // Double-randomize and assign unique IDs and normalized points
+    const finalQuestions = mockQuestions.slice(0, targetCount).map((q, idx) => {
+      const awardedPoints = basePoints + (remainder > 0 ? 1 : 0);
+      if (remainder > 0) remainder--;
+
+      return {
+        ...q,
+        points: awardedPoints,
+        id: `q_${idx + 1}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        order_index: idx
+      };
+    });
 
     const testId = `mock_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-    const totalPoints = finalQuestions.reduce((acc, q) => acc + (q.points || 1), 0);
+    const totalPoints = 100;
 
     const mockTest = {
       id: testId,
