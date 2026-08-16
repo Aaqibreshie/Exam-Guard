@@ -387,15 +387,27 @@ export default function TeacherExamDetailPage({ params }) {
           }
         }
 
-        return rawList.map(item => ({
-          question_text: item.question || item.question_text || item.text || item.problem || '',
-          question_type: (item.type || item.question_type || (item.starter_code || item.test_cases || item.problem ? 'coding' : item.options ? 'mcq' : 'short_answer')).toLowerCase(),
-          options: item.options || null,
-          correct_answer: String(item.answer || item.correct_answer || item.correct || ''),
-          starter_code: item.starter_code || '',
-          test_cases: item.test_cases || [],
-          points: parseInt(item.points || item.marks || (item.starter_code || item.problem ? 5 : 1))
-        })).filter(q => q.question_text && q.question_text.trim().length > 0);
+        return rawList.map(item => {
+          let extractedOptions = item.options || null;
+          let correctAnswer = String(item.answer || item.correct_answer || item.correct || '');
+          
+          if (extractedOptions && !Array.isArray(extractedOptions) && typeof extractedOptions === 'object') {
+            if (extractedOptions[correctAnswer]) {
+              correctAnswer = String(extractedOptions[correctAnswer]);
+            }
+            extractedOptions = Object.values(extractedOptions);
+          }
+
+          return {
+            question_text: item.question || item.question_text || item.text || item.problem || '',
+            question_type: (item.type || item.question_type || (item.starter_code || item.test_cases || item.problem ? 'coding' : item.options ? 'mcq' : 'short_answer')).toLowerCase(),
+            options: extractedOptions,
+            correct_answer: correctAnswer,
+            starter_code: item.starter_code || '',
+            test_cases: item.test_cases || [],
+            points: parseInt(item.points || item.marks || (item.starter_code || item.problem ? 5 : 1))
+          };
+        }).filter(q => q.question_text && q.question_text.trim().length > 0);
       } catch (err) {
         // Fallback to text parsing
       }
