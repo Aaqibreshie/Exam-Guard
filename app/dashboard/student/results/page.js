@@ -234,8 +234,14 @@ export default function StudentResults() {
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                         {breakdown.map((q, idx) => {
-                          const isCorrect = q.is_correct;
+                          let isCorrect = q.is_correct;
                           const hasAnswered = q.student_answer && String(q.student_answer).trim() !== '';
+                          
+                          // If it's a coding/project question and has NO test cases, it cannot be auto-graded
+                          const isManualGrading = (q.question_type === 'coding' || q.question_type === 'project') && (!q.test_cases || q.test_cases.length === 0);
+                          if (isManualGrading) {
+                            isCorrect = null;
+                          }
 
                           return (
                             <div
@@ -257,8 +263,8 @@ export default function StudentResults() {
                                     {q.question_type}
                                   </span>
                                 </div>
-                                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: isCorrect ? '#059669' : '#e11d48' }}>
-                                  {isCorrect ? `+${q.points_earned || q.points} pts (Correct)` : '0 pts (Incorrect)'}
+                                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: isCorrect === true ? '#059669' : isCorrect === null ? '#d97706' : '#e11d48' }}>
+                                  {isCorrect === true ? `+${q.points_earned || q.points} pts (Correct)` : isCorrect === null ? '⏳ Pending Manual Grade' : '0 pts (Incorrect)'}
                                 </span>
                               </div>
 
@@ -360,11 +366,11 @@ export default function StudentResults() {
                                         fontSize: '0.75rem', 
                                         padding: '2px 8px', 
                                         borderRadius: '6px', 
-                                        background: isCorrect ? '#059669' : hasAnswered ? '#e11d48' : '#cbd5e1',
-                                        color: hasAnswered ? '#ffffff' : '#475569',
+                                        background: isCorrect === true ? '#059669' : isCorrect === null ? '#f59e0b' : hasAnswered ? '#e11d48' : '#cbd5e1',
+                                        color: hasAnswered || isCorrect === null ? '#ffffff' : '#475569',
                                         fontWeight: 700 
                                       }}>
-                                        {isCorrect ? '✅ Full Marks' : hasAnswered ? '❌ Failed Tests' : '⚠️ No Code Submitted'}
+                                        {isCorrect === true ? '✅ Full Marks' : isCorrect === null ? '⏳ Needs Manual Grade' : hasAnswered ? '❌ Failed Tests' : '⚠️ No Code Submitted'}
                                       </span>
                                     </div>
 

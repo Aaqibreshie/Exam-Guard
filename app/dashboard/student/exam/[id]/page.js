@@ -597,8 +597,13 @@ export default function TakeExamPage({ params }) {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {filteredReview.map((q, idx) => {
-                const isCorrect = q.is_correct;
+                let isCorrect = q.is_correct;
                 const hasAnswered = q.student_answer && String(q.student_answer).trim() !== '';
+
+                const isManualGrading = (q.question_type === 'coding' || q.question_type === 'project') && (!q.test_cases || q.test_cases.length === 0);
+                if (isManualGrading) {
+                  isCorrect = null;
+                }
 
                 return (
                   <div
@@ -733,15 +738,18 @@ export default function TakeExamPage({ params }) {
                         <div style={{
                           padding: '14px 16px',
                           borderRadius: '10px',
-                          background: isCorrect ? '#ecfdf5' : '#fff1f2',
-                          border: `1px solid ${isCorrect ? '#a7f3d0' : '#fecdd3'}`
+                          background: isCorrect === true ? '#ecfdf5' : isCorrect === null ? '#fffbeb' : '#fff1f2',
+                          border: `1px solid ${isCorrect === true ? '#a7f3d0' : isCorrect === null ? '#fde68a' : '#fecdd3'}`
                         }}>
-                          <span style={{ fontSize: '0.75rem', color: isCorrect ? '#059669' : '#e11d48', fontWeight: 700, textTransform: 'uppercase' }}>
+                          <span style={{ fontSize: '0.75rem', color: isCorrect === true ? '#059669' : isCorrect === null ? '#d97706' : '#e11d48', fontWeight: 700, textTransform: 'uppercase' }}>
                             Your Submitted Answer
                           </span>
-                          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: isCorrect ? '#065f46' : '#991b1b', marginTop: '4px' }}>
+                          <div style={{ fontSize: '0.95rem', fontWeight: 600, color: isCorrect === true ? '#065f46' : isCorrect === null ? '#92400e' : '#991b1b', marginTop: '4px' }}>
                             {hasAnswered ? q.student_answer : '(No answer entered)'}
                           </div>
+                          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: isCorrect === true ? '#059669' : isCorrect === null ? '#d97706' : '#e11d48' }}>
+                            {isCorrect === true ? `+${q.points_earned || q.points} pts (Correct)` : isCorrect === null ? '⏳ Pending Manual Grade' : '0 pts (Incorrect)'}
+                          </span>
                         </div>
 
                         <div style={{

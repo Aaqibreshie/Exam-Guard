@@ -91,25 +91,27 @@ export async function GET(request) {
       const studentAns = a.student_answer !== undefined && a.student_answer !== null ? a.student_answer : '';
       const correctAns = q.correct_answer || '';
       
-      let isCorrect = false;
+      let isCorrect = null;
       if (a.is_correct !== undefined && a.is_correct !== null) {
         isCorrect = a.is_correct;
       } else if (correctAns && studentAns) {
         isCorrect = String(studentAns).trim().toLowerCase() === String(correctAns).trim().toLowerCase();
+      } else if (!studentAns) {
+        isCorrect = false;
       }
 
       return {
         id: q.id,
         question_text: q.question_text,
         question_type: qType,
-        options: q.options || [],
+        options: q.options || null,
         starter_code: sc,
         test_cases: tc,
         correct_answer: correctAns,
         points: q.points || 1,
         student_answer: studentAns,
         is_correct: isCorrect,
-        points_earned: a.points_earned !== undefined ? a.points_earned : (isCorrect ? (q.points || 1) : 0)
+        points_earned: a.points_earned !== undefined && a.points_earned !== null ? a.points_earned : (isCorrect === true ? (q.points || 1) : 0),
       };
     });
 
