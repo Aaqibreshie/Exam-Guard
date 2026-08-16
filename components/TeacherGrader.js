@@ -56,36 +56,20 @@ export default function TeacherGrader({ submissionId, examId, onGradeUpdated }) 
     try {
       setSaving(true);
       
-      // 1. Update answers table
-      for (const q of breakdown) {
-        const { error } = await supabase
-          .from('answers')
-          .update({
-            is_correct: q.is_correct,
-            points_earned: q.points_earned
-          })
-          .eq('submission_id', submissionId)
-          .eq('question_id', q.id);
-          
-        if (error) throw error;
-      }
-
-      // 2. Recalculate total score
-      const newTotalScore = breakdown.reduce((acc, q) => acc + (q.points_earned || 0), 0);
-      const totalPossible = breakdown.reduce((acc, q) => acc + (q.points || 1), 0);
-      const newPercentage = totalPossible > 0 ? Math.round((newTotalScore / totalPossible) * 100) : 0;
-      
-      // Assume pass if percentage >= 50, but we just save the score
-      const { error: subErr } = await supabase
-        .from('submissions')
-        .update({
-          score: newTotalScore,
-          total_possible: totalPossible,
-          percentage: newPercentage
+      const response = await fetch('/api/teacher/grade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          submission_id: submissionId,
+          breakdown: breakdown
         })
-        .eq('id', submissionId);
-        
-      if (subErr) throw subErr;
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to save grades on the server');
+      }
 
       if (onGradeUpdated) {
         onGradeUpdated();
