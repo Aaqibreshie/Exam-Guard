@@ -1,7 +1,11 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import Editor, { loader } from '@monaco-editor/react';
 import { runTestCases } from '@/lib/code-runner';
+
+// Pre-configure Monaco (optional, but good for custom themes)
+loader.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' } });
 
 export default function CodeEditor({
   initialCode = '',
@@ -17,8 +21,6 @@ export default function CodeEditor({
   const [isRunning, setIsRunning] = useState(false);
   const [testResults, setTestResults] = useState(null);
   const [activeTab, setActiveTab] = useState('tests'); // 'tests' | 'console'
-  const textareaRef = useRef(null);
-  const lineNumbersRef = useRef(null);
 
   // Sync internal state if initialCode changes
   useEffect(() => {
@@ -27,39 +29,10 @@ export default function CodeEditor({
     }
   }, [initialCode, starterCode]);
 
-  // Sync line numbers scroll with textarea scroll
-  const handleScroll = (e) => {
-    if (lineNumbersRef.current) {
-      lineNumbersRef.current.scrollTop = e.target.scrollTop;
-    }
-  };
-
-  const handleCodeChange = (e) => {
-    const val = e.target.value;
+  const handleEditorChange = (value) => {
+    const val = value || '';
     setCode(val);
     if (onChange) onChange(val);
-  };
-
-  // Support Tab key indentation
-  const handleKeyDown = (e) => {
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      const textarea = textareaRef.current;
-      if (!textarea) return;
-
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const val = textarea.value;
-
-      const updatedVal = val.substring(0, start) + '  ' + val.substring(end);
-      setCode(updatedVal);
-      if (onChange) onChange(updatedVal);
-
-      // Move cursor after the inserted 2 spaces
-      setTimeout(() => {
-        textarea.selectionStart = textarea.selectionEnd = start + 2;
-      }, 0);
-    }
   };
 
   const handleReset = () => {
@@ -89,10 +62,6 @@ export default function CodeEditor({
     }
   };
 
-  // Compute line count
-  const lines = (code || '').split('\n');
-  const lineCount = Math.max(lines.length, 1);
-
   return (
     <div style={{
       display: 'flex',
@@ -115,9 +84,9 @@ export default function CodeEditor({
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div style={{ display: 'flex', gap: '6px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444', display: 'inline-block' }} />
-            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f59e0b', display: 'inline-block' }} />
-            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
+            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444', display: 'inline-block' }}></span>
+            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f59e0b', display: 'inline-block' }}></span>
+            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }}></span>
           </div>
           <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600, marginLeft: '8px' }}>
             solution.js ({language})
@@ -169,7 +138,7 @@ export default function CodeEditor({
             >
               {isRunning ? (
                 <>
-                  <div className="spinner" style={{ width: '14px', height: '14px', borderWidth: '2px' }} />
+                  <div className="spinner" style={{ width: '14px', height: '14px', borderWidth: '2px' }}></div>
                   <span>Running...</span>
                 </>
               ) : (
@@ -183,62 +152,34 @@ export default function CodeEditor({
         </div>
       </div>
 
-      {/* Code Textarea & Gutter */}
-      <div style={{ display: 'flex', height: height, position: 'relative', background: '#0f172a' }}>
-        {/* Line Numbers Gutter */}
-        <div
-          ref={lineNumbersRef}
-          style={{
-            width: '45px',
-            padding: '14px 8px 14px 4px',
-            background: '#0f172a',
-            borderRight: '1px solid #1e293b',
-            color: '#475569',
-            fontSize: '0.875rem',
-            lineHeight: '1.5rem',
-            textAlign: 'right',
-            userSelect: 'none',
-            overflowY: 'hidden'
-          }}
-        >
-          {Array.from({ length: lineCount }).map((_, idx) => (
-            <div key={idx}>{idx + 1}</div>
-          ))}
-        </div>
-
-        {/* Code Input */}
-        <textarea
-          ref={textareaRef}
+      {/* Code Editor Body */}
+      <div style={{ height, position: 'relative', background: '#0f172a', padding: '10px 0' }}>
+        <Editor
+          height="100%"
+          language={language}
+          theme="vs-dark"
           value={code}
-          onChange={handleCodeChange}
-          onKeyDown={handleKeyDown}
-          onScroll={handleScroll}
-          readOnly={readOnly}
-          spellCheck={false}
-          autoCapitalize="off"
-          autoComplete="off"
-          autoCorrect="off"
-          placeholder="// Type your code here..."
-          style={{
-            flex: 1,
-            height: '100%',
-            padding: '14px',
-            background: 'transparent',
-            color: '#f8fafc',
-            border: 'none',
-            outline: 'none',
-            resize: 'none',
-            fontFamily: 'inherit',
-            fontSize: '0.875rem',
-            lineHeight: '1.5rem',
-            whiteSpace: 'pre',
-            overflowX: 'auto',
-            tabSize: 2
+          onChange={handleEditorChange}
+          options={{
+            readOnly,
+            minimap: { enabled: false },
+            fontSize: 14,
+            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+            lineNumbers: 'on',
+            scrollBeyondLastLine: false,
+            wordWrap: 'on',
+            automaticLayout: true,
+            tabSize: 2,
+            padding: { top: 10, bottom: 10 },
+            scrollbar: {
+              vertical: 'visible',
+              horizontal: 'hidden'
+            }
           }}
         />
       </div>
 
-      {/* Test Results & Console Panel */}
+      {/* Test Results Console */}
       {testResults && (
         <div style={{
           background: '#090d16',
@@ -247,6 +188,7 @@ export default function CodeEditor({
           maxHeight: '260px',
           overflowY: 'auto'
         }}>
+          {/* Tabs */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -303,56 +245,59 @@ export default function CodeEditor({
             </div>
           </div>
 
-          {/* Test Case Tab */}
+          {/* Tab Content */}
           {activeTab === 'tests' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {testResults.results?.length === 0 ? (
                 <div style={{ color: '#94a3b8', fontSize: '0.8rem' }}>
-                  {testResults.rawExecution?.success
-                    ? 'Code executed successfully without runtime errors.'
+                  {testResults.rawExecution?.success 
+                    ? 'Code executed successfully without runtime errors.' 
                     : `Execution Error: ${testResults.rawExecution?.error}`}
                 </div>
               ) : (
-                testResults.results.map((tc, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      background: tc.passed ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)',
-                      border: `1px solid ${tc.passed ? '#059669' : '#ef4444'}`,
-                      borderRadius: '8px',
-                      padding: '10px 12px',
-                      fontSize: '0.8rem'
-                    }}
-                  >
+                testResults.results.map((r, idx) => (
+                  <div key={idx} style={{
+                    background: r.passed ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)',
+                    border: `1px solid ${r.passed ? '#059669' : '#ef4444'}`,
+                    borderRadius: '8px',
+                    padding: '10px 12px',
+                    fontSize: '0.8rem'
+                  }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span>{tc.passed ? '✅' : '❌'}</span>
-                        <strong style={{ color: '#f8fafc' }}>{tc.description}</strong>
-                        {tc.hidden && (
+                        <span>{r.passed ? '✅' : '❌'}</span>
+                        <strong style={{ color: '#f8fafc' }}>{r.description}</strong>
+                        {r.hidden && (
                           <span style={{ fontSize: '0.7rem', background: '#334155', color: '#cbd5e1', padding: '1px 6px', borderRadius: '4px' }}>
                             Hidden
                           </span>
                         )}
                       </div>
-                      <span style={{ color: '#64748b', fontSize: '0.75rem' }}>{tc.timeMs}ms</span>
+                      <span style={{ color: '#64748b', fontSize: '0.75rem' }}>{r.timeMs}ms</span>
                     </div>
 
-                    {!tc.hidden && (
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px', marginTop: '6px', color: '#cbd5e1' }}>
-                        {tc.input && (
+                    {!r.hidden && (
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                        gap: '8px',
+                        marginTop: '6px',
+                        color: '#cbd5e1'
+                      }}>
+                        {r.input && (
                           <div>
                             <span style={{ color: '#64748b', display: 'block', fontSize: '0.7rem' }}>Input:</span>
-                            <code style={{ color: '#38bdf8' }}>{tc.input}</code>
+                            <code style={{ color: '#38bdf8' }}>{r.input}</code>
                           </div>
                         )}
                         <div>
                           <span style={{ color: '#64748b', display: 'block', fontSize: '0.7rem' }}>Expected:</span>
-                          <code style={{ color: '#10b981' }}>{tc.expected}</code>
+                          <code style={{ color: '#10b981' }}>{r.expected}</code>
                         </div>
                         <div>
                           <span style={{ color: '#64748b', display: 'block', fontSize: '0.7rem' }}>Actual:</span>
-                          <code style={{ color: tc.passed ? '#10b981' : '#ef4444' }}>
-                            {tc.error ? `Error: ${tc.error}` : tc.actual}
+                          <code style={{ color: r.passed ? '#10b981' : '#ef4444' }}>
+                            {r.error ? `Error: ${r.error}` : r.actual}
                           </code>
                         </div>
                       </div>
@@ -363,22 +308,27 @@ export default function CodeEditor({
             </div>
           )}
 
-          {/* Console Tab */}
           {activeTab === 'console' && (
-            <div style={{ fontSize: '0.8rem', color: '#94a3b8', lineHeight: '1.4' }}>
-              {testResults.results?.some(r => r.logs?.length > 0) || testResults.rawExecution?.logs?.length > 0 ? (
+            <div style={{
+              fontSize: '0.8rem',
+              color: '#94a3b8',
+              lineHeight: '1.4'
+            }}>
+              {(testResults.results?.some(r => r.logs?.length > 0) || testResults.rawExecution?.logs?.length > 0) ? (
                 <div>
-                  {(testResults.rawExecution?.logs || []).map((l, i) => (
-                    <div key={i} style={{ color: '#cbd5e1' }}>{l}</div>
+                  {(testResults.rawExecution?.logs || []).map((log, idx) => (
+                    <div key={idx} style={{ color: '#cbd5e1' }}>{log}</div>
                   ))}
                   {testResults.results?.map((r, i) => (
-                    r.logs?.map((l, j) => (
-                      <div key={`${i}-${j}`} style={{ color: '#cbd5e1' }}>{l}</div>
+                    r.logs?.map((log, j) => (
+                      <div key={`${i}-${j}`} style={{ color: '#cbd5e1' }}>{log}</div>
                     ))
                   ))}
                 </div>
               ) : (
-                <div style={{ color: '#64748b', fontStyle: 'italic' }}>No console output generated.</div>
+                <div style={{ color: '#64748b', fontStyle: 'italic' }}>
+                  No console output generated.
+                </div>
               )}
             </div>
           )}
