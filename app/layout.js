@@ -7,6 +7,9 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata = {
   title: 'ExamGuard | AI-Proofed Online Exams',
   description: 'Secure online examination platform with built-in anti-cheating detection',
+  verification: {
+    google: 'fM9I9HH0SJiz1mu_8KFbp97raAzNYN1WAcFL5izR474',
+  },
 };
 
 export default function RootLayout({ children }) {
