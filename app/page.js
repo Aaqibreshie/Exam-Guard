@@ -59,8 +59,8 @@ export default function Home() {
           </div>
 
           <h1 className="hero-title">
-            Create your own online tests,<br />
-            <span style={{ color: '#059669' }}>certification and assessments</span>
+            The Ultimate Platform for <br />
+            <span style={{ color: '#059669' }}>AI-Proctored Online Exams</span>
           </h1>
 
           <p className="hero-subtitle">
