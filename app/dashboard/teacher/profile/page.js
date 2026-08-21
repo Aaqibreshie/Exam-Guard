@@ -160,20 +160,18 @@ export default function TeacherProfilePage() {
                 <label style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 600 }}>Full Name</label>
                 <input
                   type="text"
-                  className="form-control"
+                  className="form-input"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  style={{ background: '#ffffff', borderColor: 'var(--border-subtle)', color: '#0f172a' }}
                 />
               </div>
               <div className="form-group" style={{ marginBottom: '24px' }}>
                 <label style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 600 }}>New Password (leave blank to keep current)</label>
                 <input
                   type="password"
-                  className="form-control"
+                  className="form-input"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  style={{ background: '#ffffff', borderColor: 'var(--border-subtle)', color: '#0f172a' }}
                   placeholder="••••••••"
                   minLength={6}
                 />

@@ -82,7 +82,7 @@ export default function ResetPasswordPage() {
                 <input
                   id="password"
                   type="password"
-                  className="form-control"
+                  className="form-input"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -96,7 +96,7 @@ export default function ResetPasswordPage() {
                 <input
                   id="confirmPassword"
                   type="password"
-                  className="form-control"
+                  className="form-input"
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
