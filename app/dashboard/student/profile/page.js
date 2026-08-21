@@ -132,41 +132,41 @@ export default function StudentProfilePage() {
             }}>
               {profile?.full_name?.charAt(0).toUpperCase() || 'U'}
             </div>
-            <h3 style={{ margin: '0 0 4px 0', color: '#f8fafc' }}>{profile?.full_name}</h3>
-            <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.9rem' }}>{profile?.email}</p>
-            <div style={{ marginTop: '12px', display: 'inline-block', background: '#334155', padding: '4px 12px', borderRadius: '12px', fontSize: '0.8rem', color: '#cbd5e1' }}>
+            <h3 style={{ margin: '0 0 4px 0', color: '#0f172a' }}>{profile?.full_name}</h3>
+            <p style={{ margin: 0, color: '#475569', fontSize: '0.9rem' }}>{profile?.email}</p>
+            <div style={{ marginTop: '12px', display: 'inline-block', background: 'var(--primary-light)', padding: '4px 12px', borderRadius: '12px', fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 600 }}>
               Student • {profile?.subject === 'mern' ? 'MERN Stack' : 'Git & GitHub'}
             </div>
           </div>
 
           {/* Edit Profile Form */}
           <div className="glass-card-static" style={{ padding: '24px' }}>
-            <h3 style={{ fontSize: '1.1rem', marginBottom: '16px', color: '#f8fafc', borderBottom: '1px solid #334155', paddingBottom: '8px' }}>
+            <h3 style={{ fontSize: '1.1rem', marginBottom: '16px', color: '#0f172a', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '8px' }}>
               Account Settings
             </h3>
             
-            {message && <div style={{ padding: '8px 12px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', borderRadius: '6px', fontSize: '0.85rem', marginBottom: '16px' }}>{message}</div>}
-            {error && <div style={{ padding: '8px 12px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', borderRadius: '6px', fontSize: '0.85rem', marginBottom: '16px' }}>{error}</div>}
+            {message && <div style={{ padding: '8px 12px', background: 'var(--accent-emerald-light)', color: 'var(--accent-emerald)', borderRadius: '6px', fontSize: '0.85rem', marginBottom: '16px', border: '1px solid rgba(5, 150, 105, 0.2)' }}>{message}</div>}
+            {error && <div style={{ padding: '8px 12px', background: 'var(--accent-red-light)', color: 'var(--accent-red)', borderRadius: '6px', fontSize: '0.85rem', marginBottom: '16px', border: '1px solid rgba(225, 29, 72, 0.2)' }}>{error}</div>}
 
             <form onSubmit={handleUpdateProfile}>
               <div className="form-group" style={{ marginBottom: '16px' }}>
-                <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Full Name</label>
+                <label style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 600 }}>Full Name</label>
                 <input
                   type="text"
                   className="form-control"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  style={{ background: '#0f172a', borderColor: '#334155' }}
+                  style={{ background: '#ffffff', borderColor: 'var(--border-subtle)', color: '#0f172a' }}
                 />
               </div>
               <div className="form-group" style={{ marginBottom: '20px' }}>
-                <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>New Password (leave blank to keep)</label>
+                <label style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 600 }}>New Password (leave blank to keep)</label>
                 <input
                   type="password"
                   className="form-control"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  style={{ background: '#0f172a', borderColor: '#334155' }}
+                  style={{ background: '#ffffff', borderColor: 'var(--border-subtle)', color: '#0f172a' }}
                   placeholder="••••••••"
                   minLength={6}
                 />
@@ -184,29 +184,29 @@ export default function StudentProfilePage() {
           {/* Quick Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <div className="glass-card-static" style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'var(--accent-cyan-light)', color: 'var(--accent-cyan)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
                 📝
               </div>
               <div>
-                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#f8fafc', lineHeight: 1 }}>{submissions.length}</div>
-                <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '4px' }}>Exams Taken</div>
+                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#0f172a', lineHeight: 1 }}>{submissions.length}</div>
+                <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '4px' }}>Exams Taken</div>
               </div>
             </div>
             
             <div className="glass-card-static" style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'var(--accent-emerald-light)', color: 'var(--accent-emerald)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
                 🎯
               </div>
               <div>
-                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#f8fafc', lineHeight: 1 }}>{avgScore}<span style={{ fontSize: '1rem', color: '#64748b' }}>/100</span></div>
-                <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '4px' }}>Average Score</div>
+                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#0f172a', lineHeight: 1 }}>{avgScore}<span style={{ fontSize: '1rem', color: '#64748b' }}>/100</span></div>
+                <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '4px' }}>Average Score</div>
               </div>
             </div>
           </div>
 
           {/* Exam History */}
           <div className="glass-card-static" style={{ padding: '24px', flex: 1 }}>
-            <h3 style={{ fontSize: '1.1rem', marginBottom: '16px', color: '#f8fafc', borderBottom: '1px solid #334155', paddingBottom: '8px' }}>
+            <h3 style={{ fontSize: '1.1rem', marginBottom: '16px', color: '#0f172a', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '8px' }}>
               Exam History
             </h3>
 
@@ -222,7 +222,7 @@ export default function StudentProfilePage() {
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                   <thead>
-                    <tr style={{ borderBottom: '1px solid #334155', color: '#94a3b8', textAlign: 'left' }}>
+                    <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: '#64748b', textAlign: 'left' }}>
                       <th style={{ padding: '12px 8px', fontWeight: 600 }}>Exam</th>
                       <th style={{ padding: '12px 8px', fontWeight: 600 }}>Date</th>
                       <th style={{ padding: '12px 8px', fontWeight: 600 }}>Status</th>
@@ -236,27 +236,27 @@ export default function StudentProfilePage() {
                       const isExpelled = sub.status === 'expelled';
                       
                       return (
-                        <tr key={sub.id} style={{ borderBottom: '1px solid #1e293b' }}>
-                          <td style={{ padding: '16px 8px', color: '#f8fafc', fontWeight: 500 }}>
+                        <tr key={sub.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                          <td style={{ padding: '16px 8px', color: '#0f172a', fontWeight: 600 }}>
                             {sub.exams?.title || 'Unknown Exam'}
                           </td>
-                          <td style={{ padding: '16px 8px', color: '#94a3b8' }}>{examDate}</td>
+                          <td style={{ padding: '16px 8px', color: '#475569' }}>{examDate}</td>
                           <td style={{ padding: '16px 8px' }}>
                             <span style={{ 
                               padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600,
-                              background: isExpelled ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
-                              color: isExpelled ? '#ef4444' : '#10b981'
+                              background: isExpelled ? 'var(--accent-red-light)' : 'var(--accent-emerald-light)',
+                              color: isExpelled ? 'var(--accent-red)' : 'var(--accent-emerald)'
                             }}>
                               {sub.status.toUpperCase()}
                             </span>
                           </td>
-                          <td style={{ padding: '16px 8px', color: '#f8fafc', fontWeight: 600 }}>
+                          <td style={{ padding: '16px 8px', color: '#0f172a', fontWeight: 600 }}>
                             {isExpelled ? '--' : (sub.score !== null ? `${sub.score}/${sub.exams?.total_marks || 100}` : 'Pending')}
                           </td>
                           <td style={{ padding: '16px 8px' }}>
                             <Link 
                               href={`/dashboard/student/results?exam=${sub.exam_id}`} 
-                              style={{ color: '#38bdf8', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 500 }}
+                              style={{ color: 'var(--accent-cyan)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600 }}
                             >
                               View Details →
                             </Link>
