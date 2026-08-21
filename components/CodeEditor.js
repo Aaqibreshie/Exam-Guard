@@ -47,7 +47,7 @@ export default function CodeEditor({
   const handleRun = async () => {
     setIsRunning(true);
     try {
-      const results = await runTestCases(code, testCases);
+      const results = await runTestCases(code, testCases, language);
       setTestResults(results);
       if (onRunResults) onRunResults(results);
       if (results.results?.length > 0) {
@@ -89,7 +89,7 @@ export default function CodeEditor({
             <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }}></span>
           </div>
           <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600, marginLeft: '8px' }}>
-            solution.js ({language})
+            solution.{language === 'python' ? 'py' : language === 'java' ? 'java' : language === 'rust' ? 'rs' : language === 'cpp' ? 'cpp' : language === 'c' ? 'c' : 'js'} ({language})
           </span>
         </div>
 
