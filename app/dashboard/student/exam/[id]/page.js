@@ -468,8 +468,7 @@ export default function TakeExamPage({ params }) {
   if (!exam) {
     return (
       <div className="dashboard-container" style={{ textAlign: 'center', padding: '100px 20px' }}>
-        <div className="spinner" style={{ margin: '0 auto 20px auto' }}></div>
-        <p style={{ color: 'var(--text-secondary)' }}>Configuring AI Proctor Environment...</p>
+        <p style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>Configuring AI Proctor Environment...</p>
       </div>
     );
   }
