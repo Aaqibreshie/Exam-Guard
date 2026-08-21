@@ -997,26 +997,6 @@ Points: 2`);
             {creationMode === 'single' && (
               <form onSubmit={handleAddSingleQuestion}>
                 <div className="form-group">
-                  <label>Question Type</label>
-                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                    {[
-                      { id: 'mcq', label: '🔘 Multiple Choice (MCQ)' },
-                      { id: 'short_answer', label: '✍️ Short Answer' },
-                      { id: 'project', label: '💻 Project / Code Challenge' }
-                    ].map(type => (
-                      <button
-                        key={type.id}
-                        type="button"
-                        onClick={() => setQType(type.id)}
-                        className={`btn btn-sm ${qType === type.id ? 'btn-primary' : 'btn-ghost'}`}
-                      >
-                        {type.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="form-group">
                   <label htmlFor="qText">Question Prompt</label>
                   <textarea 
                     id="qText"
