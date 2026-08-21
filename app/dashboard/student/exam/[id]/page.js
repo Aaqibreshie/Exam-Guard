@@ -138,12 +138,16 @@ export default function TakeExamPage({ params }) {
             let sc = q.starter_code || '';
             let tc = q.test_cases || [];
             let qType = q.question_type;
-            if (q.options && typeof q.options === 'object' && !Array.isArray(q.options)) {
-              if (q.options.starter_code) sc = q.options.starter_code;
-              if (q.options.test_cases) tc = q.options.test_cases;
-              if (q.options.is_coding || q.options.starter_code) qType = 'coding';
+            let parsedOptions = q.options;
+            if (typeof parsedOptions === 'string') {
+              try { parsedOptions = JSON.parse(parsedOptions); } catch(e) {}
             }
-            return { ...q, question_type: qType, starter_code: sc, test_cases: tc };
+            if (parsedOptions && typeof parsedOptions === 'object' && !Array.isArray(parsedOptions)) {
+              if (parsedOptions.starter_code) sc = parsedOptions.starter_code;
+              if (parsedOptions.test_cases) tc = parsedOptions.test_cases;
+              if (parsedOptions.is_coding || parsedOptions.starter_code) qType = 'coding';
+            }
+            return { ...q, question_type: qType, starter_code: sc, test_cases: tc, options: parsedOptions };
           });
           setQuestions(normalizedQuestions);
           
