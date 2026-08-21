@@ -387,7 +387,8 @@ export default function TakeExamPage({ params }) {
         .order('order_index', { ascending: true });
         
       const qList = allQuestions && allQuestions.length > 0 ? allQuestions : questions;
-      const results = await calculateExamScoreAsync(qList, answers || {});
+      const currentAnswers = answersRef.current || answers || {};
+      const results = await calculateExamScoreAsync(qList, currentAnswers);
       const subId = submissionRef.current?.id || submission?.id;
 
       if (!subId) {
@@ -399,13 +400,13 @@ export default function TakeExamPage({ params }) {
       const answersToInsert = gradedList.map(res => ({
         submission_id: subId,
         question_id: res.question_id,
-        student_answer: answers[res.question_id] || '',
+        student_answer: currentAnswers[res.question_id] || '',
         is_correct: res.is_correct,
         points_earned: res.points_earned
       }));
 
       if (answersToInsert.length > 0) {
-        await supabase.from('answers').insert(answersToInsert);
+        await supabase.from('answers').upsert(answersToInsert, { onConflict: 'submission_id,question_id' });
       }
 
       const status = expelled ? 'expelled' : 'submitted';

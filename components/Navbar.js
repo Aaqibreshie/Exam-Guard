@@ -67,15 +67,17 @@ export default function Navbar({ user }) {
       </nav>
 
       <div className="navbar-user">
-        <div className="user-badge">
-          <div className="user-avatar">
-            {user?.full_name?.charAt(0).toUpperCase() || 'U'}
+        <Link href={`/dashboard/${user?.role || 'student'}/profile`} style={{ textDecoration: 'none' }}>
+          <div className="user-badge" style={{ cursor: 'pointer' }}>
+            <div className="user-avatar">
+              {user?.full_name?.charAt(0).toUpperCase() || 'U'}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span className="user-name">{user?.full_name || 'User'}</span>
+              <span className="user-role-tag">{user?.role || 'Member'}</span>
+            </div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span className="user-name">{user?.full_name || 'User'}</span>
-            <span className="user-role-tag">{user?.role || 'Member'}</span>
-          </div>
-        </div>
+        </Link>
         <button onClick={handleLogout} className="btn btn-ghost btn-sm">
           <span>🚪</span> Sign Out
         </button>
