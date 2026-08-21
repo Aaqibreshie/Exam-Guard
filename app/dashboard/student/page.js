@@ -58,7 +58,7 @@ export default async function StudentDashboard() {
   });
 
   const averageScore = completedCount > 0 ? (totalScore / completedCount).toFixed(1) : 0;
-  const isMern = userSubject?.toLowerCase() === 'mern';
+  const subjectDisplay = userSubject && userSubject !== 'mern' ? userSubject : (userSubject === 'mern' ? 'MERN Stack' : 'Undecided');
 
   return (
     <div className="dashboard-container">
@@ -67,11 +67,11 @@ export default async function StudentDashboard() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px', flexWrap: 'wrap' }}>
             <h1 className="dashboard-title">Student Portal</h1>
             <span className="badge-subject" style={{
-              background: isMern ? '#e0f2fe' : '#f5f3ff',
-              color: isMern ? '#0284c7' : '#7c3aed',
-              borderColor: isMern ? '#bae6fd' : '#ddd6fe'
+              background: '#e0f2fe',
+              color: '#0284c7',
+              borderColor: '#bae6fd'
             }}>
-              {isMern ? '⚡ Track: MERN Stack' : '🐙 Track: Git & GitHub'}
+              ⚡ Track: {subjectDisplay}
             </span>
             <span style={{
               fontSize: '0.8rem',

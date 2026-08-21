@@ -30,6 +30,7 @@ export default function TeacherExamDetailPage({ params }) {
   const [mcqCorrect, setMcqCorrect] = useState(0);
   const [shortAnswerCorrect, setShortAnswerCorrect] = useState('');
   const [qPoints, setQPoints] = useState(1);
+  const [qLanguage, setQLanguage] = useState('javascript');
   const [starterCode, setStarterCode] = useState("function solution(arr) {\n  // Write your code here\n  return arr;\n}");
   const [testCases, setTestCases] = useState([
     { input: '[1, 2, 3]', expected_output: '[3, 2, 1]', description: 'Sample Test Case 1', hidden: false }
@@ -286,8 +287,8 @@ export default function TeacherExamDetailPage({ params }) {
           exam_id: id,
           question_text: qText.trim(),
           question_type: (qType === 'coding') ? 'project' : qType,
-          options: isCodeType ? { is_coding: true, starter_code: starterCode, test_cases: validTestCases } : options,
-          correct_answer: correctAnswer,
+          options: isCodeType ? { is_coding: true, starter_code: starterCode, test_cases: validTestCases, language: qLanguage } : options,
+          correct_answer: isCodeType ? null : correctAnswer,
           points,
           order_index: questions.length
         };
@@ -1065,8 +1066,26 @@ Points: 2`);
                       </div>
                     </div>
 
+                    <div className="form-group" style={{ marginBottom: '12px' }}>
+                      <label htmlFor="languageSelect" style={{ fontSize: '0.85rem' }}>Programming Language</label>
+                      <select
+                        id="languageSelect"
+                        value={qLanguage}
+                        onChange={(e) => setQLanguage(e.target.value)}
+                        className="form-input"
+                        style={{ padding: '8px 12px' }}
+                      >
+                        <option value="javascript">JavaScript (Node.js)</option>
+                        <option value="python">Python 3.10</option>
+                        <option value="java">Java 15</option>
+                        <option value="cpp">C++ (GCC)</option>
+                        <option value="c">C (GCC)</option>
+                        <option value="rust">Rust</option>
+                      </select>
+                    </div>
+
                     <div className="form-group" style={{ marginBottom: 0 }}>
-                      <label htmlFor="starterCodeInput" style={{ fontSize: '0.85rem' }}>Starter Code Template (JavaScript)</label>
+                      <label htmlFor="starterCodeInput" style={{ fontSize: '0.85rem' }}>Starter Code Template</label>
                       <textarea
                         id="starterCodeInput"
                         rows={4}

@@ -371,17 +371,16 @@ export default function Signup() {
               {role === 'student' && (
                 <>
                   <div className="form-group">
-                    <label htmlFor="subject">Subject Track</label>
-                    <select
+                    <label htmlFor="subject">Primary Subject / Tech Stack</label>
+                    <input
                       id="subject"
+                      type="text"
+                      placeholder="e.g. Data Science, React, Python"
                       value={subject}
                       onChange={(e) => setSubject(e.target.value)}
-                      className="form-select"
+                      className="form-input"
                       required
-                    >
-                      <option value="mern">MERN Stack (MongoDB, Express, React, Node)</option>
-                      <option value="git">Git</option>
-                    </select>
+                    />
                   </div>
 
                   <div className="form-group">

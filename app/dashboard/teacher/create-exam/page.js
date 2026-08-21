@@ -150,16 +150,16 @@ export default function CreateExamPage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
             <div className="form-group">
-              <label htmlFor="subject">Subject Track</label>
-              <select 
+              <label htmlFor="subject">Subject / Tech Stack</label>
+              <input 
                 id="subject"
+                type="text"
+                placeholder="e.g. React, Data Science, Python"
                 value={subject} 
                 onChange={(e) => setSubject(e.target.value)}
-                className="form-select"
-              >
-                <option value="mern">MERN Stack (MongoDB, Express, React, Node)</option>
-                <option value="git">Git</option>
-              </select>
+                className="form-input"
+                required
+              />
             </div>
             
             <div className="form-group">

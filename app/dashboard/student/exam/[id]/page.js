@@ -1143,7 +1143,7 @@ export default function TakeExamPage({ params }) {
                     initialCode={answers[currentQ.id] !== undefined ? answers[currentQ.id] : (currentQ.starter_code || '')}
                     starterCode={currentQ.starter_code || ''}
                     testCases={currentQ.test_cases || []}
-                    language="javascript"
+                    language={currentQ.options?.language || "javascript"}
                     onChange={(newCode) => handleAnswerChange(newCode)}
                     height="320px"
                   />

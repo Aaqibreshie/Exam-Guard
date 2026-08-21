@@ -135,7 +135,7 @@ export default function StudentProfilePage() {
             <h3 style={{ margin: '0 0 4px 0', color: '#0f172a' }}>{profile?.full_name}</h3>
             <p style={{ margin: 0, color: '#475569', fontSize: '0.9rem' }}>{profile?.email}</p>
             <div style={{ marginTop: '12px', display: 'inline-block', background: 'var(--primary-light)', padding: '4px 12px', borderRadius: '12px', fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 600 }}>
-              Student • {profile?.subject === 'mern' ? 'MERN Stack' : 'Git & GitHub'}
+              Student • {profile?.subject || 'Undecided'}
             </div>
           </div>
 
