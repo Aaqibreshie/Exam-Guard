@@ -757,36 +757,67 @@ Points: 2`);
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Main Section Navigation Tabs */}
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', borderBottom: '1px solid #eaecf0', paddingBottom: '12px' }}>
-        <button
-          onClick={() => setActiveTab('questions')}
-          className={`btn btn-md ${activeTab === 'questions' ? 'btn-primary' : 'btn-ghost'}`}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-        >
-          <span>📝</span> Question Paper ({questions.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('candidates')}
-          className={`btn btn-md ${activeTab === 'candidates' ? 'btn-primary' : 'btn-ghost'}`}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-        >
-          <span>👥</span> Eligible Students & Batch Access
-          {accessType === 'selected' && (
-            <span style={{ 
-              background: '#059669', 
-              color: '#ffffff',
-              padding: '2px 8px', 
-              borderRadius: '10px', 
-              fontSize: '0.75rem',
-              fontWeight: 700
-            }}>
-              {selectedCandidateIds.size}
-            </span>
-          )}
-        </button>
+        {/* Integrated Navigation Tabs */}
+        <div style={{ 
+          display: 'flex', 
+          gap: '32px', 
+          borderTop: '1px solid #e2e8f0', 
+          paddingTop: '24px', 
+          marginTop: '32px',
+          marginBottom: '-8px'
+        }}>
+          <button
+            onClick={() => setActiveTab('questions')}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: '0 0 12px 0',
+              fontSize: '1rem',
+              fontWeight: activeTab === 'questions' ? 700 : 500,
+              color: activeTab === 'questions' ? '#059669' : '#64748b',
+              borderBottom: activeTab === 'questions' ? '3px solid #059669' : '3px solid transparent',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <span>📝</span> Question Paper ({questions.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('candidates')}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: '0 0 12px 0',
+              fontSize: '1rem',
+              fontWeight: activeTab === 'candidates' ? 700 : 500,
+              color: activeTab === 'candidates' ? '#059669' : '#64748b',
+              borderBottom: activeTab === 'candidates' ? '3px solid #059669' : '3px solid transparent',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <span>👥</span> Eligible Students & Batch Access
+            {accessType === 'selected' && (
+              <span style={{ 
+                background: '#059669', 
+                color: '#ffffff',
+                padding: '2px 8px', 
+                borderRadius: '10px', 
+                fontSize: '0.75rem',
+                fontWeight: 700
+              }}>
+                {selectedCandidateIds.size}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* TAB 1: QUESTION PAPER BUILDER */}
