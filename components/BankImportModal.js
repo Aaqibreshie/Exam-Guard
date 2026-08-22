@@ -47,7 +47,7 @@ export default function BankImportModal({ examId, examSubject, onImportSuccess, 
       
       const toInsert = selectedQuestions.map((q, index) => ({
         exam_id: examId,
-        question: q.question,
+        question_text: q.question,
         question_type: q.question_type,
         options: q.options,
         correct_answer: q.correct_answer,
