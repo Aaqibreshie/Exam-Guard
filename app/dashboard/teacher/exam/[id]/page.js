@@ -267,7 +267,7 @@ export default function TeacherExamDetailPage({ params }) {
         exam_id: id,
         question_text: qText.trim(),
         question_type: qType,
-        options,
+        options: isCodeType ? { language: qLanguage } : options,
         correct_answer: correctAnswer,
         points,
         order_index: questions.length,
