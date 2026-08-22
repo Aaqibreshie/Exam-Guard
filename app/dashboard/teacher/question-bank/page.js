@@ -44,7 +44,88 @@ export default function QuestionBankPage() {
       setLoading(false);
     }
   }
+  // Bulk Import State
+  const [creationMode, setCreationMode] = useState('single'); // 'single' | 'bulk'
+  const [bulkInput, setBulkInput] = useState('');
+  const [bulkLoading, setBulkLoading] = useState(false);
 
+  const loadSampleTemplate = (format) => {
+    if (format === 'coding') {
+      setBulkInput(JSON.stringify([
+        {
+          "question": "Write a function `reverseArray(arr)` that returns a new array with elements in reversed order.",
+          "type": "coding",
+          "starter_code": "function reverseArray(arr) {\n  // Your code here\n  return arr.reverse();\n}",
+          "test_cases": [
+            { "input": "[1, 2, 3, 4, 5]", "expected": "[5, 4, 3, 2, 1]", "hidden": false }
+          ],
+          "points": 5,
+          "subject": "JavaScript"
+        }
+      ], null, 2));
+    } else if (format === 'json') {
+      setBulkInput(JSON.stringify([
+        {
+          "question": "What is the primary role of the virtual DOM in React?",
+          "type": "mcq",
+          "options": ["Direct manipulation of native DOM nodes", "In-memory representation", "Node.js APIs", "MongoDB"],
+          "answer": "In-memory representation",
+          "points": 2,
+          "subject": "MERN"
+        }
+      ], null, 2));
+    }
+  };
+
+  const handleBulkImport = async () => {
+    if (!bulkInput.trim()) return alert('Please enter question data');
+    setBulkLoading(true);
+    try {
+      let parsed = [];
+      try {
+        parsed = JSON.parse(bulkInput);
+        if (!Array.isArray(parsed)) throw new Error("JSON must be an array of questions");
+      } catch (err) {
+        throw new Error("Invalid JSON format. Please check syntax.");
+      }
+
+      const toInsert = parsed.map((q, i) => {
+        let qLanguage = 'python';
+        if (q.subject && q.subject.toLowerCase().includes('javascript')) qLanguage = 'javascript';
+        if (q.subject && q.subject.toLowerCase().includes('java') && !q.subject.toLowerCase().includes('script')) qLanguage = 'java';
+        
+        const isCodeType = q.type === 'coding' || q.type === 'project';
+        const finalOptions = isCodeType ? { language: qLanguage } : (q.options || null);
+
+        return {
+          created_by: userId,
+          question: q.question || `Imported Question ${i + 1}`,
+          question_type: q.type || 'mcq',
+          options: finalOptions,
+          correct_answer: q.answer || null,
+          points: q.points || 1,
+          subject: q.subject || 'General',
+          starter_code: q.starter_code || null,
+          test_cases: q.test_cases || []
+        };
+      });
+
+      const { error: insErr } = await supabase
+        .from('question_bank')
+        .insert(toInsert);
+
+      if (insErr) throw insErr;
+      
+      alert(`Successfully imported ${toInsert.length} questions into the bank!`);
+      setBulkInput('');
+      setShowAddModal(false);
+      fetchQuestions();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setBulkLoading(false);
+    }
+  };
   const handleAddQuestion = async (e) => {
     e.preventDefault();
     setAddLoading(true);
@@ -117,10 +198,48 @@ export default function QuestionBankPage() {
         <div className="glass-card-static" style={{ padding: '32px', marginBottom: '32px', borderLeft: '4px solid #059669' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a' }}>New Question</h3>
-            <button onClick={() => setShowAddModal(false)} className="btn btn-ghost">Cancel</button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button 
+                onClick={() => setCreationMode('single')} 
+                className={`btn btn-sm ${creationMode === 'single' ? 'btn-primary' : 'btn-ghost'}`}
+              >
+                ✏️ Single Form
+              </button>
+              <button 
+                onClick={() => setCreationMode('bulk')} 
+                className={`btn btn-sm ${creationMode === 'bulk' ? 'btn-primary' : 'btn-ghost'}`}
+              >
+                ⚡ Bulk Import
+              </button>
+              <button onClick={() => setShowAddModal(false)} className="btn btn-ghost btn-sm" style={{ marginLeft: '12px' }}>Cancel</button>
+            </div>
           </div>
           
-          <form onSubmit={handleAddQuestion}>
+          {creationMode === 'bulk' ? (
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '0.85rem', color: '#64748b' }}>Load Template:</span>
+                <button type="button" onClick={() => loadSampleTemplate('coding')} className="btn btn-ghost btn-sm" style={{ padding: '4px 10px', fontSize: '0.8rem', background: '#ecfdf5', color: '#059669' }}>
+                  💻 Coding JSON
+                </button>
+                <button type="button" onClick={() => loadSampleTemplate('json')} className="btn btn-ghost btn-sm" style={{ padding: '4px 10px', fontSize: '0.8rem', background: '#f5f3ff', color: '#7c3aed' }}>
+                  🔘 MCQ JSON
+                </button>
+              </div>
+              <textarea 
+                className="form-input" 
+                rows="12" 
+                value={bulkInput} 
+                onChange={e => setBulkInput(e.target.value)} 
+                placeholder="Paste your JSON array of questions here..."
+                style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}
+              />
+              <button onClick={handleBulkImport} className="btn btn-primary" style={{ marginTop: '16px' }} disabled={bulkLoading}>
+                {bulkLoading ? 'Importing...' : 'Start Import'}
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleAddQuestion}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
               <div className="form-group">
                 <label className="form-label">Type</label>
@@ -186,6 +305,7 @@ export default function QuestionBankPage() {
               {addLoading ? 'Saving...' : 'Save to Bank'}
             </button>
           </form>
+          )}
         </div>
       )}
 
