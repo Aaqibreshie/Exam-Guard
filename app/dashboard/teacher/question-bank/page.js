@@ -245,13 +245,24 @@ export default function QuestionBankPage() {
                 <button type="button" onClick={() => loadSampleTemplate('json')} className="btn btn-ghost btn-sm" style={{ padding: '4px 10px', fontSize: '0.8rem', background: '#f5f3ff', color: '#7c3aed' }}>
                   🔘 MCQ JSON
                 </button>
+                <button type="button" onClick={() => loadSampleTemplate('csv')} className="btn btn-ghost btn-sm" style={{ padding: '4px 10px', fontSize: '0.8rem', background: '#fffbeb', color: '#b45309' }}>
+                  📄 CSV
+                </button>
+                <button type="button" onClick={() => loadSampleTemplate('txt')} className="btn btn-ghost btn-sm" style={{ padding: '4px 10px', fontSize: '0.8rem', background: '#e0f2fe', color: '#0369a1' }}>
+                  📝 Raw Text
+                </button>
               </div>
+
+              <div style={{ marginBottom: '16px' }}>
+                <input type="file" accept=".json,.csv,.txt" onChange={handleFileUpload} className="form-input" style={{ padding: '8px' }} />
+              </div>
+
               <textarea 
                 className="form-input" 
                 rows="12" 
                 value={bulkInput} 
                 onChange={e => setBulkInput(e.target.value)} 
-                placeholder="Paste your JSON array of questions here..."
+                placeholder="Paste your JSON, CSV, or Raw Text questions here..."
                 style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}
               />
               <button onClick={handleBulkImport} className="btn btn-primary" style={{ marginTop: '16px' }} disabled={bulkLoading}>
