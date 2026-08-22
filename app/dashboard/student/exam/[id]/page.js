@@ -1142,7 +1142,6 @@ export default function TakeExamPage({ params }) {
               {/* Coding / Project Assessment Editor */}
               {(currentQ.question_type === 'project' || currentQ.question_type === 'coding') && (
                 <div style={{ marginTop: '8px' }}>
-                  <pre style={{background:'red', color:'white', padding:'10px'}}>DEBUG options: {JSON.stringify(currentQ.options)} | language: {currentQ.options?.language} | qType: {currentQ.question_type}</pre>
                   <CodeEditor
                     initialCode={answers[currentQ.id] !== undefined ? answers[currentQ.id] : (currentQ.starter_code || '')}
                     starterCode={currentQ.starter_code || ''}
