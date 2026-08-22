@@ -75,8 +75,6 @@ export default function QuestionBankPage() {
           "subject": "MERN"
         }
       ], null, 2));
-    }
-
     } else if (format === 'csv') {
       setBulkInput("Question,OptionA,OptionB,OptionC,OptionD,CorrectAnswer,Points\nWhat command creates a Git branch?,git branch -new,git checkout -b,git switch -c,git branch --create,git checkout -b,2\nWhich middleware parses JSON?,express.urlencoded(),express.json(),bodyParser.text(),express.static(),express.json(),1");
     } else if (format === 'txt') {
