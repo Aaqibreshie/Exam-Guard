@@ -24,35 +24,27 @@ export async function POST(req) {
       return NextResponse.json({ error: `Language ${language} is not supported yet.` }, { status: 400 });
     }
 
-    const response = await fetch('https://emkc.org/api/v2/piston/execute', {
+    const response = await fetch('https://emkc.org/api/v1/piston/execute', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         language: pistonLang.lang,
-        version: pistonLang.version,
-        files: [
-          {
-            content: code,
-          },
-        ],
+        source: code
       }),
     });
 
     if (!response.ok) {
-      throw new Error('Execution engine failed');
+      throw new Error('Execution engine failed: ' + await response.text());
     }
 
     const data = await response.json();
     
     // Determine output
     let output = '';
-    if (data.run) {
-      output = data.run.output || '';
-      if (data.run.stderr && !output.includes(data.run.stderr)) {
-         output += '\n' + data.run.stderr;
-      }
+    if (data.output) {
+      output = data.output;
     }
 
     return NextResponse.json({ output: output.trim() });
