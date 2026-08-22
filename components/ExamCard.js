@@ -4,12 +4,13 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { getSubjectStyling } from '@/lib/subject-helpers';
 
 export default function ExamCard({ exam, role, href, onDeleted }) {
-  const isMern = exam.subject?.toLowerCase() === 'mern';
   const [deleting, setDeleting] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+  const subjectStyle = getSubjectStyling(exam.subject);
 
   const handleDelete = async (e) => {
     e.preventDefault();
@@ -52,11 +53,11 @@ export default function ExamCard({ exam, role, href, onDeleted }) {
           <div className="exam-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
               <span className="badge-subject" style={{
-                background: isMern ? '#e0f2fe' : '#f5f3ff',
-                color: isMern ? '#0284c7' : '#7c3aed',
-                borderColor: isMern ? '#bae6fd' : '#ddd6fe'
+                background: subjectStyle.bg,
+                color: subjectStyle.color,
+                borderColor: subjectStyle.border
               }}>
-                {isMern ? '⚡ MERN' : '🐙 Git'}
+                {subjectStyle.label}
               </span>
 
               {isCoding ? (

@@ -4,6 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { getSubjectStyling } from '@/lib/subject-helpers';
+
 export default function StudentExamList({ exams = [], submissions = [], userBatch = '', userSubject = '' }) {
   const router = useRouter();
   const [selectedTrack, setSelectedTrack] = useState('all'); // 'all' | 'mern' | 'git'
@@ -66,6 +68,7 @@ export default function StudentExamList({ exams = [], submissions = [], userBatc
           {uniqueSubjects.map(sub => {
             const count = exams.filter(e => (e.subject || 'General') === sub).length;
             const isSelected = selectedTrack === sub;
+            const style = getSubjectStyling(sub);
             return (
               <button
                 key={sub}
@@ -75,12 +78,12 @@ export default function StudentExamList({ exams = [], submissions = [], userBatc
                 style={{
                   borderRadius: '20px',
                   fontWeight: 600,
-                  background: isSelected ? '#0284c7' : '#f0f9ff',
-                  color: isSelected ? '#ffffff' : '#0369a1',
-                  border: isSelected ? 'none' : '1px solid #bae6fd'
+                  background: isSelected ? style.color : style.bg,
+                  color: isSelected ? '#ffffff' : style.color,
+                  border: isSelected ? 'none' : `1px solid ${style.border}`
                 }}
               >
-                ⚡ {sub} ({count})
+                {style.label} ({count})
               </button>
             );
           })}
@@ -95,7 +98,7 @@ export default function StudentExamList({ exams = [], submissions = [], userBatc
       <div className="exam-grid">
         {filteredExams.length > 0 ? (
           filteredExams.map(exam => {
-            const subjectLabel = exam.subject || 'General';
+            const subjectStyle = getSubjectStyling(exam.subject);
             const submission = submissions.find(s => s.exam_id === exam.id);
             const isTaken = submission && (submission.status === 'submitted' || submission.status === 'expelled');
             const isExpelled = submission?.status === 'expelled';
@@ -116,11 +119,11 @@ export default function StudentExamList({ exams = [], submissions = [], userBatc
                   <div className="exam-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                       <span className="badge-subject" style={{
-                        background: '#f5f3ff',
-                        color: '#7c3aed',
-                        borderColor: '#ddd6fe'
+                        background: subjectStyle.bg,
+                        color: subjectStyle.color,
+                        borderColor: subjectStyle.border
                       }}>
-                        📚 {subjectLabel.length > 15 ? subjectLabel.substring(0, 15) + '...' : subjectLabel}
+                        {subjectStyle.label}
                       </span>
 
                       {isCoding ? (
