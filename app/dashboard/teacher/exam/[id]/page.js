@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { getSubjectStyling } from '@/lib/subject-helpers';
+import BankImportModal from '@/components/BankImportModal';
 
 export default function TeacherExamDetailPage({ params }) {
   const { id } = use(params);
@@ -891,8 +892,32 @@ Points: 2`);
                 >
                   ⚡ Bulk Import
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setCreationMode('bank')}
+                  className={`btn btn-sm ${creationMode === 'bank' ? 'btn-primary' : 'btn-ghost'}`}
+                  style={{ borderRadius: '8px', background: creationMode === 'bank' ? '#4f46e5' : '#e0e7ff', color: creationMode === 'bank' ? '#ffffff' : '#4338ca', border: creationMode === 'bank' ? 'none' : '1px solid #c7d2fe' }}
+                >
+                  📂 Import from Bank
+                </button>
+
               </div>
             </div>
+
+            
+            {/* BANK IMPORT MODE */}
+            {creationMode === 'bank' && (
+              <BankImportModal 
+                examId={exam.id} 
+                examSubject={exam.subject} 
+                onImportSuccess={(newQuestions) => {
+                  setQuestions([...questions, ...newQuestions]);
+                  setCreationMode('single');
+                  showNotification(`🎉 Successfully imported ${newQuestions.length} questions from the bank!`);
+                }}
+                onCancel={() => setCreationMode('single')}
+              />
+            )}
 
             {/* BULK IMPORT MODE */}
             {creationMode === 'bulk' && (

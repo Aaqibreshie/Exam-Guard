@@ -18,6 +18,7 @@ export default function Navbar({ user }) {
     if (user?.role === 'teacher') {
       return [
         { name: '📊 Dashboard', path: '/dashboard/teacher' },
+        { name: '📂 Question Bank', path: '/dashboard/teacher/question-bank' },
         { name: '➕ Create Exam', path: '/dashboard/teacher/create-exam' },
       ];
     }
