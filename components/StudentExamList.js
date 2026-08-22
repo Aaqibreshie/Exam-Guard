@@ -33,12 +33,11 @@ export default function StudentExamList({ exams = [], submissions = [], userBatc
     }
   };
 
-  const mernCount = exams.filter(e => e.subject?.toLowerCase() === 'mern').length;
-  const gitCount = exams.filter(e => e.subject?.toLowerCase() === 'git').length;
+  const uniqueSubjects = [...new Set(exams.map(e => e.subject || 'General'))].sort();
 
   const filteredExams = exams.filter(exam => {
     if (selectedTrack === 'all') return true;
-    return exam.subject?.toLowerCase() === selectedTrack;
+    return (exam.subject || 'General') === selectedTrack;
   });
 
   return (
@@ -64,35 +63,27 @@ export default function StudentExamList({ exams = [], submissions = [], userBatc
             🌐 All Available Exams ({exams.length})
           </button>
           
-          <button
-            type="button"
-            onClick={() => setSelectedTrack('mern')}
-            className={`btn btn-sm ${selectedTrack === 'mern' ? 'btn-primary' : 'btn-ghost'}`}
-            style={{
-              borderRadius: '20px',
-              fontWeight: 600,
-              background: selectedTrack === 'mern' ? '#0284c7' : '#f0f9ff',
-              color: selectedTrack === 'mern' ? '#ffffff' : '#0369a1',
-              border: selectedTrack === 'mern' ? 'none' : '1px solid #bae6fd'
-            }}
-          >
-            ⚡ MERN Stack ({mernCount})
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setSelectedTrack('git')}
-            className={`btn btn-sm ${selectedTrack === 'git' ? 'btn-primary' : 'btn-ghost'}`}
-            style={{
-              borderRadius: '20px',
-              fontWeight: 600,
-              background: selectedTrack === 'git' ? '#7c3aed' : '#f5f3ff',
-              color: selectedTrack === 'git' ? '#ffffff' : '#6d28d9',
-              border: selectedTrack === 'git' ? 'none' : '1px solid #ddd6fe'
-            }}
-          >
-            🐙 Git & GitHub ({gitCount})
-          </button>
+          {uniqueSubjects.map(sub => {
+            const count = exams.filter(e => (e.subject || 'General') === sub).length;
+            const isSelected = selectedTrack === sub;
+            return (
+              <button
+                key={sub}
+                type="button"
+                onClick={() => setSelectedTrack(sub)}
+                className={`btn btn-sm ${isSelected ? 'btn-primary' : 'btn-ghost'}`}
+                style={{
+                  borderRadius: '20px',
+                  fontWeight: 600,
+                  background: isSelected ? '#0284c7' : '#f0f9ff',
+                  color: isSelected ? '#ffffff' : '#0369a1',
+                  border: isSelected ? 'none' : '1px solid #bae6fd'
+                }}
+              >
+                ⚡ {sub} ({count})
+              </button>
+            );
+          })}
         </div>
 
         <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>
@@ -104,7 +95,7 @@ export default function StudentExamList({ exams = [], submissions = [], userBatc
       <div className="exam-grid">
         {filteredExams.length > 0 ? (
           filteredExams.map(exam => {
-            const isMern = exam.subject?.toLowerCase() === 'mern';
+            const subjectLabel = exam.subject || 'General';
             const submission = submissions.find(s => s.exam_id === exam.id);
             const isTaken = submission && (submission.status === 'submitted' || submission.status === 'expelled');
             const isExpelled = submission?.status === 'expelled';
@@ -125,11 +116,11 @@ export default function StudentExamList({ exams = [], submissions = [], userBatc
                   <div className="exam-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                       <span className="badge-subject" style={{
-                        background: isMern ? '#e0f2fe' : '#f5f3ff',
-                        color: isMern ? '#0284c7' : '#7c3aed',
-                        borderColor: isMern ? '#bae6fd' : '#ddd6fe'
+                        background: '#f5f3ff',
+                        color: '#7c3aed',
+                        borderColor: '#ddd6fe'
                       }}>
-                        {isMern ? '⚡ MERN' : '🐙 GIT'}
+                        📚 {subjectLabel.length > 15 ? subjectLabel.substring(0, 15) + '...' : subjectLabel}
                       </span>
 
                       {isCoding ? (
