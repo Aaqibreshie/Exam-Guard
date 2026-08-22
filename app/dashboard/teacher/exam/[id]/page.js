@@ -501,7 +501,9 @@ export default function TeacherExamDetailPage({ params }) {
         exam_id: id,
         question_text: q.question_text,
         question_type: q.question_type,
-        options: q.options,
+        options: (q.question_type === 'project' || q.question_type === 'coding')
+          ? { ...(q.options || {}), language: q.options?.language || 'javascript' }
+          : q.options,
         correct_answer: q.correct_answer,
         starter_code: q.starter_code || null,
         test_cases: q.test_cases && q.test_cases.length > 0 ? q.test_cases : null,
