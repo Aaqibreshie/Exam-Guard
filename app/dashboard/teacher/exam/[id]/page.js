@@ -4,6 +4,7 @@ import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
+import { getSubjectStyling } from '@/lib/subject-helpers';
 
 export default function TeacherExamDetailPage({ params }) {
   const { id } = use(params);
@@ -712,7 +713,11 @@ Points: 2`);
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-              <span className="badge-subject">{exam.subject?.toUpperCase()}</span>
+              <span className="badge-subject" style={{
+                background: getSubjectStyling(exam.subject).bg,
+                color: getSubjectStyling(exam.subject).color,
+                borderColor: getSubjectStyling(exam.subject).border
+              }}>{getSubjectStyling(exam.subject).label}</span>
               <span className={`badge-status ${exam.is_published ? 'badge-published' : 'badge-draft'}`}>
                 {exam.is_published ? '● Published (Live)' : '○ Draft Mode'}
               </span>
