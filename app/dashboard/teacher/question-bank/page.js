@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { getSubjectStyling } from '@/lib/subject-helpers';
+import { autoDetectAndParse } from '@/lib/question-parser';
 
 export default function QuestionBankPage() {
   const supabase = createClient();
@@ -75,6 +76,12 @@ export default function QuestionBankPage() {
         }
       ], null, 2));
     }
+
+    } else if (format === 'csv') {
+      setBulkInput("Question,OptionA,OptionB,OptionC,OptionD,CorrectAnswer,Points\nWhat command creates a Git branch?,git branch -new,git checkout -b,git switch -c,git branch --create,git checkout -b,2\nWhich middleware parses JSON?,express.urlencoded(),express.json(),bodyParser.text(),express.static(),express.json(),1");
+    } else if (format === 'txt') {
+      setBulkInput("1. What hook is used in React to manage state?\nA) useEffect\nB) useState\nC) useContext\nD) useReducer\nAnswer: B\nPoints: 1\n\n2. Explain what a closure is in JavaScript.\nCorrect Answer: A function that remembers its outer lexical environment.\nPoints: 2");
+    }
   };
 
   const handleBulkImport = async () => {
@@ -83,28 +90,28 @@ export default function QuestionBankPage() {
     try {
       let parsed = [];
       try {
-        parsed = JSON.parse(bulkInput);
-        if (!Array.isArray(parsed)) throw new Error("JSON must be an array of questions");
+        parsed = autoDetectAndParse(bulkInput);
+        if (!parsed || parsed.length === 0) throw new Error("Could not detect any valid questions.");
       } catch (err) {
-        throw new Error("Invalid JSON format. Please check syntax.");
+        throw new Error("Failed to parse format: " + err.message);
       }
 
       const toInsert = parsed.map((q, i) => {
         let qLanguage = 'python';
-        if (q.subject && q.subject.toLowerCase().includes('javascript')) qLanguage = 'javascript';
-        if (q.subject && q.subject.toLowerCase().includes('java') && !q.subject.toLowerCase().includes('script')) qLanguage = 'java';
+        if (qSubject && qSubject.toLowerCase().includes('javascript')) qLanguage = 'javascript';
+        if (qSubject && qSubject.toLowerCase().includes('java') && !qSubject.toLowerCase().includes('script')) qLanguage = 'java';
         
-        const isCodeType = q.type === 'coding' || q.type === 'project';
+        const isCodeType = q.question_type === 'coding' || q.question_type === 'project';
         const finalOptions = isCodeType ? { language: qLanguage } : (q.options || null);
 
         return {
           created_by: userId,
-          question: q.question || `Imported Question ${i + 1}`,
-          question_type: q.type || 'mcq',
+          question: q.question_text || `Imported Question ${i + 1}`,
+          question_type: q.question_type || 'mcq',
           options: finalOptions,
-          correct_answer: q.answer || null,
+          correct_answer: q.correct_answer || null,
           points: q.points || 1,
-          subject: q.subject || 'General',
+          subject: qSubject || 'General',
           starter_code: q.starter_code || null,
           test_cases: q.test_cases || []
         };
@@ -126,6 +133,21 @@ export default function QuestionBankPage() {
       setBulkLoading(false);
     }
   };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result;
+      if (typeof content === 'string') {
+        setBulkInput(content);
+      }
+    };
+    reader.readAsText(file);
+  };
+
   const handleAddQuestion = async (e) => {
     e.preventDefault();
     setAddLoading(true);
