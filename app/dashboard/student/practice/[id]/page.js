@@ -74,9 +74,9 @@ export default function PracticeIDEPage({ params }) {
           resultMsg = data.error;
         } else {
           isCorrect = data.passed === data.total && data.total > 0;
-          resultMsg = \`Passed \${data.passed}/\${data.total} test cases.\`;
+          resultMsg = `Passed ${data.passed}/${data.total} test cases.`;
           if (data.failed_tests && data.failed_tests.length > 0) {
-            resultMsg += \`\\nFailed on input: \${data.failed_tests[0].input}\\nExpected: \${data.failed_tests[0].expected_output}\\nGot: \${data.failed_tests[0].actual_output}\`;
+            resultMsg += `\\nFailed on input: ${data.failed_tests[0].input}\\nExpected: ${data.failed_tests[0].expected_output}\\nGot: ${data.failed_tests[0].actual_output}`;
           }
         }
       } else if (question.question_type === 'mcq') {
@@ -178,7 +178,7 @@ export default function PracticeIDEPage({ params }) {
               marginTop: '32px', padding: '16px', borderRadius: '8px',
               background: feedback.type === 'success' ? '#dcfce7' : (feedback.type === 'error' ? '#fee2e2' : '#f1f5f9'),
               color: feedback.type === 'success' ? '#166534' : (feedback.type === 'error' ? '#991b1b' : '#334155'),
-              border: \`1px solid \${feedback.type === 'success' ? '#bbf7d0' : (feedback.type === 'error' ? '#fecaca' : '#cbd5e1')}\`
+              border: `1px solid ${feedback.type === 'success' ? '#bbf7d0' : (feedback.type === 'error' ? '#fecaca' : '#cbd5e1')}`
             }}>
               <h4 style={{ margin: '0 0 8px 0', fontWeight: 700, fontSize: '1.1rem' }}>
                 {feedback.type === 'success' ? '✅ Success!' : (feedback.type === 'error' ? '❌ Wrong Answer' : '⏳ Running...')}
