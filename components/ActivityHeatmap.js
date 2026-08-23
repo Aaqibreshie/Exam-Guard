@@ -74,6 +74,17 @@ export default function ActivityHeatmap({ activityData = [] }) {
     }
   };
 
+  
+  const getTextColor = (level) => {
+    switch(level) {
+      case 1: return '#34d399';
+      case 2: return '#fbbf24';
+      case 3: return '#f472b6';
+      case 4: return '#a78bfa';
+      default: return '#94a3b8';
+    }
+  };
+
   const getGlow = (level) => {
     switch(level) {
       case 1: return '0 0 10px rgba(52, 211, 153, 0.4)';
@@ -183,10 +194,10 @@ export default function ActivityHeatmap({ activityData = [] }) {
               zIndex: 100
             }}
           >
-            <div style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '4px', background: getColor(hoveredDay.level > 0 ? hoveredDay.level : 1), WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <div style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '4px', color: getTextColor(hoveredDay.level) }}>
               +{hoveredDay.count * 150} XP
             </div>
-            <div style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Earned on {hoveredDay.date}</div>
+            <div style={{ color: '#94a3b8', fontSize: '0.85rem' }}>{hoveredDay.count === 0 ? 'No activity on' : 'Earned on'} {hoveredDay.date}</div>
           </motion.div>
         )}
       </AnimatePresence>
