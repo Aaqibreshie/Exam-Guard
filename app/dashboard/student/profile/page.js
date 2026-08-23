@@ -55,7 +55,7 @@ export default function StudentProfilePage() {
           )
         `)
         .eq('student_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('started_at', { ascending: false });
 
       if (subs) {
         setSubmissions(subs);
