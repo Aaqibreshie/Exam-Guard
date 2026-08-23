@@ -24,7 +24,7 @@ export default function Navbar({ user }) {
     }
     return [
       { name: '📝 Available Exams', path: '/dashboard/student' },
-      { name: '✨ AI Practice Arena', path: '/dashboard/student/mock-test' },
+      { name: '🌎 Practice Arena', path: '/dashboard/student/practice' },
       { name: '🏆 My Results', path: '/dashboard/student/results' },
     ];
   };
