@@ -249,7 +249,7 @@ export default function StudentProfilePage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {submissions.map((sub) => {
+                    {submissions.slice(0, 5).map((sub) => {
                       const examDate = new Date(sub.started_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                       const isExpelled = sub.status === 'expelled';
                       
@@ -284,6 +284,14 @@ export default function StudentProfilePage() {
                     })}
                   </tbody>
                 </table>
+              </div>
+            )}
+            
+            {submissions.length > 5 && (
+              <div style={{ textAlign: 'center', marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
+                <Link href="/dashboard/student/results" className="btn btn-ghost btn-sm" style={{ color: 'var(--text-secondary)' }}>
+                  View All {submissions.length} Exams →
+                </Link>
               </div>
             )}
           </div>
