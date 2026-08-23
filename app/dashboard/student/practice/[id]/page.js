@@ -157,12 +157,43 @@ export default function PracticeIDEPage({ params }) {
           </h1>
           
           {question.question_type === 'mcq' && (
-            <div style={{ marginBottom: '24px' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#334155', marginBottom: '12px' }}>Options:</h3>
-              <ul style={{ listStyleType: 'none', padding: 0 }}>
-                {(question.options || []).map((opt, i) => (
-                  <li key={i} style={{ padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', marginBottom: '8px' }}>
-                    <span style={{ fontWeight: 600, marginRight: '12px', color: '#64748b' }}>{String.fromCharCode(65 + i)}.</span>
+            <div style={{ marginBottom: '24px', maxWidth: '800px' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#334155', marginBottom: '16px' }}>Select an Option:</h3>
+              <ul style={{ listStyleType: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {(question.options || []).map((opt, i) => {
+                  const isSelected = code === opt;
+                  return (
+                    <li 
+                      key={i} 
+                      onClick={() => setCode(opt)}
+                      style={{ 
+                        padding: '16px', 
+                        background: isSelected ? '#eff6ff' : '#f8fafc', 
+                        border: `2px solid ${isSelected ? '#3b82f6' : '#e2e8f0'}`, 
+                        borderRadius: '12px', 
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        display: 'flex',
+                        alignItems: 'center'
+                      }}
+                    >
+                      <span style={{ 
+                        display: 'flex', justifyContent: 'center', alignItems: 'center',
+                        width: '28px', height: '28px', borderRadius: '50%', 
+                        background: isSelected ? '#3b82f6' : '#cbd5e1', 
+                        color: '#fff', fontWeight: 700, marginRight: '16px' 
+                      }}>
+                        {String.fromCharCode(65 + i)}
+                      </span>
+                      <span style={{ fontSize: '1.05rem', color: isSelected ? '#1e3a8a' : '#334155', fontWeight: isSelected ? 600 : 400 }}>
+                        {opt}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}.</span>
                     {opt}
                   </li>
                 ))}
@@ -190,6 +221,8 @@ export default function PracticeIDEPage({ params }) {
           )}
         </div>
 
+        {question.question_type !== 'mcq' && (
+        <>
         {/* Right Pane: Code Editor */}
         <div style={{ flex: '1', display: 'flex', flexDirection: 'column' }}>
           <div style={{ background: '#1e293b', padding: '8px 16px', color: '#94a3b8', fontSize: '0.85rem', borderBottom: '1px solid #334155' }}>
