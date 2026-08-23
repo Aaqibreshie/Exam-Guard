@@ -193,15 +193,6 @@ export default function PracticeIDEPage({ params }) {
                 })}
               </ul>
             </div>
-          )}.</span>
-                    {opt}
-                  </li>
-                ))}
-              </ul>
-              <p style={{ marginTop: '24px', color: '#64748b', fontSize: '0.9rem' }}>
-                * Type your answer exactly (or the exact option text) into the editor on the right and click Submit.
-              </p>
-            </div>
           )}
 
           {feedback && (
@@ -236,6 +227,8 @@ export default function PracticeIDEPage({ params }) {
             />
           </div>
         </div>
+        </>
+        )}
 
       </div>
     </div>
