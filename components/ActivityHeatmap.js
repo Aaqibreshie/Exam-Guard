@@ -114,7 +114,7 @@ export default function ActivityHeatmap({ activityData = [] }) {
       <div style={{ position: 'absolute', top: '-50%', left: '-20%', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(167,139,250,0.15) 0%, rgba(15,23,42,0) 70%)', borderRadius: '50%' }} />
       <div style={{ position: 'absolute', bottom: '-50%', right: '-20%', width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(52,211,153,0.1) 0%, rgba(15,23,42,0) 70%)', borderRadius: '50%' }} />
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px', position: 'relative', zIndex: 10 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', position: 'relative', zIndex: 10 }}>
         <div>
           <h4 style={{ fontSize: '1.25rem', color: '#f8fafc', margin: '0 0 4px 0', fontWeight: 800, letterSpacing: '-0.02em' }}>Activity Hive</h4>
           <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.9rem' }}>Track your mastery progression</p>
