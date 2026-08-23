@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
+import ActivityHeatmap from '@/components/ActivityHeatmap';
 
 export default function StudentProfilePage() {
   const supabase = createClient();
   const [profile, setProfile] = useState(null);
   const [submissions, setSubmissions] = useState([]);
+  const [activityData, setActivityData] = useState([]);
   const [loading, setLoading] = useState(true);
   
   // Form states
@@ -59,6 +61,19 @@ export default function StudentProfilePage() {
 
       if (subs) {
         setSubmissions(subs);
+        
+        // Also fetch practice attempts for heatmap
+        const { data: practice } = await supabase
+          .from('practice_attempts')
+          .select('created_at')
+          .eq('student_id', user.id);
+          
+        const dates = [];
+        subs.forEach(s => dates.push(s.started_at));
+        if (practice) {
+          practice.forEach(p => dates.push(p.created_at));
+        }
+        setActivityData(dates);
       }
     } catch (err) {
       console.error('Error fetching profile data:', err);
@@ -200,6 +215,11 @@ export default function StudentProfilePage() {
                 <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '4px' }}>Average Score</div>
               </div>
             </div>
+          </div>
+
+          {/* Heatmap Card */}
+          <div className="glass-card-static" style={{ padding: '24px' }}>
+            <ActivityHeatmap activityData={activityData} />
           </div>
 
           {/* Exam History */}
