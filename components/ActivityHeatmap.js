@@ -1,16 +1,15 @@
 'use client';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ActivityHeatmap({ activityData = [] }) {
-  // activityData: array of date strings 'YYYY-MM-DD'
-  
+  const [hoveredDay, setHoveredDay] = useState(null);
+
   const heatmap = useMemo(() => {
     const today = new Date();
-    // Start 12 weeks ago (approx 3 months)
     const startDate = new Date();
     startDate.setDate(today.getDate() - (12 * 7));
     
-    // Create map of counts
     const counts = {};
     activityData.forEach(d => {
       const dateStr = new Date(d).toISOString().split('T')[0];
@@ -24,7 +23,6 @@ export default function ActivityHeatmap({ activityData = [] }) {
       const week = [];
       for (let d = 0; d < 7; d++) {
         if (currentDay > today) break;
-        
         const dStr = currentDay.toISOString().split('T')[0];
         const count = counts[dStr] || 0;
         
@@ -39,7 +37,6 @@ export default function ActivityHeatmap({ activityData = [] }) {
       }
       weeks.push(week);
     }
-    
     return weeks;
   }, [activityData]);
 
@@ -53,35 +50,97 @@ export default function ActivityHeatmap({ activityData = [] }) {
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.02 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, scale: 0.5 },
+    show: { opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 300, damping: 20 } }
+  };
+
   return (
-    <div style={{ marginTop: '24px' }}>
-      <h4 style={{ fontSize: '1rem', color: '#334155', marginBottom: '12px', fontWeight: 600 }}>Activity Heatmap (Last 3 Months)</h4>
-      <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '8px' }}>
+    <div style={{ marginTop: '24px', position: 'relative' }}>
+      <h4 style={{ fontSize: '1.05rem', color: '#0f172a', marginBottom: '16px', fontWeight: 700 }}>Contribution Graph</h4>
+      
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        style={{ display: 'flex', gap: '5px', overflowX: 'auto', paddingBottom: '12px' }}
+      >
         {heatmap.map((week, i) => (
-          <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
             {week.map((day, j) => (
-              <div 
+              <motion.div 
                 key={j} 
-                title={`${day.count} activities on ${day.date}`}
+                variants={itemVariants}
+                whileHover={{ scale: 1.4, zIndex: 10, outline: '2px solid rgba(0,0,0,0.1)' }}
+                onMouseEnter={() => setHoveredDay({ ...day, weekIndex: i, dayIndex: j })}
+                onMouseLeave={() => setHoveredDay(null)}
                 style={{ 
-                  width: '14px', 
-                  height: '14px', 
-                  borderRadius: '3px',
+                  width: '15px', 
+                  height: '15px', 
+                  borderRadius: '4px',
                   background: getColor(day.level),
-                  border: '1px solid rgba(27, 31, 35, 0.06)'
+                  cursor: 'pointer',
+                  position: 'relative'
                 }} 
               />
             ))}
           </div>
         ))}
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', color: '#64748b', marginTop: '8px' }}>
+      </motion.div>
+
+      {/* Modern Floating Tooltip */}
+      <AnimatePresence>
+        {hoveredDay && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 5, scale: 0.9 }}
+            transition={{ duration: 0.15 }}
+            style={{
+              position: 'absolute',
+              top: '-40px',
+              left: Math.min(hoveredDay.weekIndex * 20, 250) + 'px',
+              background: '#0f172a',
+              color: '#fff',
+              padding: '8px 12px',
+              borderRadius: '8px',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              pointerEvents: 'none',
+              boxShadow: '0 10px 15px -3px rgba(0,0,0,0.2)',
+              whiteSpace: 'nowrap',
+              zIndex: 50
+            }}
+          >
+            <span style={{ color: '#86efac' }}>{hoveredDay.count}</span> activities on {hoveredDay.date}
+            <div style={{
+              position: 'absolute',
+              bottom: '-4px',
+              left: '20px',
+              width: '8px',
+              height: '8px',
+              background: '#0f172a',
+              transform: 'rotate(45deg)'
+            }} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: '#64748b', marginTop: '12px', fontWeight: 500 }}>
         <span>Less</span>
-        <div style={{ width: '12px', height: '12px', background: '#f1f5f9', borderRadius: '2px' }}></div>
-        <div style={{ width: '12px', height: '12px', background: '#dcfce7', borderRadius: '2px' }}></div>
-        <div style={{ width: '12px', height: '12px', background: '#86efac', borderRadius: '2px' }}></div>
-        <div style={{ width: '12px', height: '12px', background: '#22c55e', borderRadius: '2px' }}></div>
-        <div style={{ width: '12px', height: '12px', background: '#16a34a', borderRadius: '2px' }}></div>
+        <div style={{ width: '14px', height: '14px', background: '#f1f5f9', borderRadius: '3px' }}></div>
+        <div style={{ width: '14px', height: '14px', background: '#dcfce7', borderRadius: '3px' }}></div>
+        <div style={{ width: '14px', height: '14px', background: '#86efac', borderRadius: '3px' }}></div>
+        <div style={{ width: '14px', height: '14px', background: '#22c55e', borderRadius: '3px' }}></div>
+        <div style={{ width: '14px', height: '14px', background: '#16a34a', borderRadius: '3px' }}></div>
         <span>More</span>
       </div>
     </div>
