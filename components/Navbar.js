@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import ThemeToggle from '@/components/ThemeToggle';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
