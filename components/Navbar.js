@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import ThemeToggle from '@/components/ThemeToggle';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
@@ -80,7 +79,6 @@ export default function Navbar({ user }) {
             </div>
           </div>
         </Link>
-        <ThemeToggle />
         <button onClick={handleLogout} className="btn btn-ghost btn-sm">
           <span>🚪</span> Sign Out
         </button>
