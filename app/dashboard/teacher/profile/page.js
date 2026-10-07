@@ -86,6 +86,13 @@ export default function TeacherProfilePage() {
 
   if (loading) {
     return (
+      <div className="dashboard-container" style={{ display: 'flex', justifyContent: 'center', paddingTop: '100px' }}>
+        <div className="spinner"></div>
+      </div>
+    );
+  }
+
+  return (
     <div className="dashboard-page" style={{ maxWidth: '1100px', margin: '0 auto', padding: '32px 16px' }}>
       <div className="dashboard-header">
         <div>
@@ -182,5 +189,4 @@ export default function TeacherProfilePage() {
       </div>
     </div>
   );
-}
 }
