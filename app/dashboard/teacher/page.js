@@ -38,16 +38,18 @@ export default async function TeacherDashboard() {
   let totalSubmissions = 0;
   let totalScores = 0;
   let totalPossible = 0;
+  let subs = [];
 
   // Fetch submissions stats if there are exams
   if (totalExams > 0) {
     
-    const { data: subs } = await supabase
+    const { data: subsData } = await supabase
       .from('submissions')
       .select('exam_id, score, total_possible')
       .in('exam_id', examIds);
 
-    if (subs) {
+    if (subsData) {
+      subs = subsData;
       totalSubmissions = subs.length;
       subs.forEach(sub => {
         totalScores += (sub.score || 0);
