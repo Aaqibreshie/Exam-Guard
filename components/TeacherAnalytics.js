@@ -32,7 +32,7 @@ export default function TeacherAnalytics({ examStats = [], questionStats = [] })
                   cursor={{ fill: 'rgba(255,255,255,0.05)' }}
                   contentStyle={{ background: '#020617', border: '1px solid #1e293b', borderRadius: '8px', color: '#fff' }}
                 />
-                <Bar dataKey="average" radius={[4, 4, 0, 0]}>
+                <Bar dataKey="average" radius={[4, 4, 0, 0]} minPointSize={5} label={{ position: 'top', fill: '#94a3b8', fontSize: 12, formatter: (val) => val + '%' }}>
                   {examStats.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.average >= 70 ? '#10b981' : (entry.average >= 50 ? '#f59e0b' : '#ef4444')} />
                   ))}
@@ -65,7 +65,7 @@ export default function TeacherAnalytics({ examStats = [], questionStats = [] })
                     contentStyle={{ background: '#020617', border: '1px solid #1e293b', borderRadius: '8px', color: '#fff' }}
                     formatter={(value) => [`${value}% Success Rate`, 'Performance']}
                   />
-                  <Bar dataKey="successRate" radius={[0, 4, 4, 0]} barSize={20}>
+                  <Bar dataKey="successRate" radius={[0, 4, 4, 0]} barSize={20} minPointSize={5} label={{ position: 'right', fill: '#94a3b8', fontSize: 12, formatter: (val) => val + '%' }}>
                     {questionStats.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.successRate >= 70 ? '#10b981' : (entry.successRate >= 50 ? '#f59e0b' : '#ef4444')} />
                     ))}
