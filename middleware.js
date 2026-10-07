@@ -31,7 +31,8 @@ export async function middleware(request) {
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
   const { pathname } = request.nextUrl;
 
   // Redirect unauthenticated users away from dashboard
