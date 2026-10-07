@@ -34,13 +34,14 @@ export default async function TeacherDashboard() {
   const totalExams = examList.length;
   const publishedExams = examList.filter(e => e.is_published).length;
   
+  const examIds = examList.map(e => e.id);
   let totalSubmissions = 0;
   let totalScores = 0;
   let totalPossible = 0;
 
   // Fetch submissions stats if there are exams
   if (totalExams > 0) {
-    const examIds = examList.map(e => e.id);
+    
     const { data: subs } = await supabase
       .from('submissions')
       .select('exam_id, score, total_possible')
