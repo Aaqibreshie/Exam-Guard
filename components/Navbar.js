@@ -80,6 +80,7 @@ export default function Navbar({ user }) {
             </div>
           </div>
         </Link>
+        <ThemeToggle />
         <button onClick={handleLogout} className="btn btn-ghost btn-sm">
           <span>🚪</span> Sign Out
         </button>
