@@ -182,6 +182,7 @@ export default function QuestionBankPage() {
       setQText('');
       setQOptions(['', '', '', '']);
       setQAnswer('');
+      setQSubject('General');
       
       fetchQuestions();
     } catch (err) {
@@ -248,7 +249,10 @@ export default function QuestionBankPage() {
       setQText('');
       setQOptions(['', '', '', '']);
       setQAnswer('');
+      setQSubject('General');
       
+      // Optimistic update
+      setQuestions(prev => prev.map(q => q.id === editingQuestion.id ? { ...q, ...updatedQ } : q));
       fetchQuestions();
     } catch (err) {
       alert(err.message);
