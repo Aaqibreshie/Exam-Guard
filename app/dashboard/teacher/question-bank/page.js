@@ -426,9 +426,6 @@ export default function QuestionBankPage() {
         </div>
       ) : (
         <div style={{ display: 'grid', gap: '16px' }}>
-          <div style={{ background: '#f8d7da', color: '#721c24', padding: '10px', borderRadius: '5px' }}>
-            DEBUG COLUMNS: {questions.length > 0 ? Object.keys(questions[0]).join(', ') : 'No questions'}
-          </div>
           {questions.map(q => {
             const style = getSubjectStyling(q.subject);
             return (
