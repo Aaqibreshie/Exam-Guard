@@ -71,7 +71,7 @@ export default async function StudentDashboard() {
               color: '#0284c7',
               borderColor: '#bae6fd'
             }}>
-              ⚡ Track: {subjectDisplay}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: '6px'}}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Track: {subjectDisplay}
             </span>
             <span style={{
               fontSize: '0.8rem',
@@ -82,13 +82,13 @@ export default async function StudentDashboard() {
               border: '1px solid #e2e8f0',
               fontWeight: 600
             }}>
-              🎓 {userBatch}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: '6px'}}><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>{userBatch}
             </span>
           </div>
           <p className="dashboard-subtitle">Select an assigned exam paper to begin your monitored evaluation session</p>
         </div>
         <Link href="/dashboard/student/results" className="btn btn-ghost btn-sm">
-          📊 View All My Results →
+          <div style={{display:'flex', alignItems:'center', gap:'8px'}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-4"/></svg><span>View All My Results →</span></div>
         </Link>
       </div>
 
@@ -128,7 +128,7 @@ export default async function StudentDashboard() {
       }}>
         <div style={{ maxWidth: '640px' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid #059669', color: '#10b981', padding: '3px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700, marginBottom: '8px' }}>
-            <span>✨ NEW AI FEATURE</span>
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: '4px'}}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>NEW AI FEATURE</span>
           </div>
           <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#ffffff', margin: '0 0 6px 0' }}>
             AI Mock Exam & Practice Arena
@@ -150,7 +150,7 @@ export default async function StudentDashboard() {
             boxShadow: '0 4px 14px rgba(5, 150, 105, 0.4)'
           }}
         >
-          🚀 Launch AI Practice Arena →
+          <div style={{display:'flex', alignItems:'center', gap:'8px'}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg><span>Launch AI Practice Arena →</span></div>
         </Link>
       </div>
 

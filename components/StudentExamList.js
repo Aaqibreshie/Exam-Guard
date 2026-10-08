@@ -62,7 +62,7 @@ export default function StudentExamList({ exams = [], submissions = [], userBatc
             className={`btn btn-sm ${selectedTrack === 'all' ? 'btn-primary' : 'btn-ghost'}`}
             style={{ borderRadius: '20px', fontWeight: 600 }}
           >
-            🌐 All Available Exams ({exams.length})
+            <div style={{display:'flex',alignItems:'center',gap:'6px'}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg><span>All Available Exams</span></div> ({exams.length})
           </button>
           
           {uniqueSubjects.map(sub => {
@@ -89,7 +89,7 @@ export default function StudentExamList({ exams = [], submissions = [], userBatc
           })}
         </div>
 
-        <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>
+        <span style={{display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>
           Showing {filteredExams.length} of {exams.length} paper{exams.length !== 1 ? 's' : ''}
         </span>
       </div>
@@ -127,7 +127,7 @@ export default function StudentExamList({ exams = [], submissions = [], userBatc
                       </span>
 
                       {isCoding ? (
-                        <span style={{
+                        <span style={{display: 'flex', alignItems: 'center', gap: '4px',
                           padding: '3px 8px',
                           borderRadius: '12px',
                           fontSize: '0.72rem',
@@ -136,10 +136,10 @@ export default function StudentExamList({ exams = [], submissions = [], userBatc
                           color: '#059669',
                           border: '1px solid #a7f3d0'
                         }}>
-                          💻 Live Coding
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="12" x="3" y="4" rx="2" ry="2"/><line x1="2" x2="22" y1="20" y2="20"/></svg> Live Coding
                         </span>
                       ) : isHybrid ? (
-                        <span style={{
+                        <span style={{display: 'flex', alignItems: 'center', gap: '4px',
                           padding: '3px 8px',
                           borderRadius: '12px',
                           fontSize: '0.72rem',
@@ -148,7 +148,7 @@ export default function StudentExamList({ exams = [], submissions = [], userBatc
                           color: '#2563eb',
                           border: '1px solid #bfdbfe'
                         }}>
-                          ⚡ Theory + Code
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Theory + Code
                         </span>
                       ) : null}
                     </div>
@@ -168,15 +168,15 @@ export default function StudentExamList({ exams = [], submissions = [], userBatc
 
                   <div className="exam-meta" style={{ marginBottom: '20px' }}>
                     <div className="exam-meta-item">
-                      <span>⏱️</span>
+                      <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{color: '#94a3b8'}}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
                       <span><strong>{exam.duration_minutes}m</strong> duration</span>
                     </div>
                     <div className="exam-meta-item">
-                      <span>🎯</span>
+                      <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{color: '#94a3b8'}}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
                       <span><strong>{exam.total_marks}</strong> pts</span>
                     </div>
                     <div className="exam-meta-item">
-                      <span>🛡️</span>
+                      <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{color: '#94a3b8'}}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
                       <span>Max <strong>{exam.max_warnings || 3}</strong> warnings</span>
                     </div>
                   </div>
@@ -192,8 +192,8 @@ export default function StudentExamList({ exams = [], submissions = [], userBatc
                         border: `1px solid ${isExpelled ? '#fecdd3' : '#a7f3d0'}`,
                         borderRadius: '10px',
                       }}>
-                        <span style={{ fontSize: '0.8rem', color: isExpelled ? '#e11d48' : '#059669', fontWeight: 700 }}>
-                          {isExpelled ? '❌ Expelled' : '✅ Evaluated'}
+                        <span style={{display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', color: isExpelled ? '#e11d48' : '#059669', fontWeight: 700 }}>
+                          {isExpelled ? <div style={{display:'flex',alignItems:'center',gap:'6px'}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg><span>Expelled</span></div> : <div style={{display:'flex',alignItems:'center',gap:'6px'}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Evaluated</span></div>}
                         </span>
                         <strong style={{ 
                           fontSize: '0.95rem',
@@ -208,7 +208,7 @@ export default function StudentExamList({ exams = [], submissions = [], userBatc
                         className="btn btn-ghost btn-sm w-full"
                         style={{ textAlign: 'center', fontSize: '0.8rem' }}
                       >
-                        📝 Review Solutions & Answer Key →
+                        <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg><span>Review Solutions & Answer Key →</span></div>
                       </Link>
                     </div>
                   ) : (
@@ -216,7 +216,7 @@ export default function StudentExamList({ exams = [], submissions = [], userBatc
                       onClick={() => handleStartAttempt(exam, submission?.status === 'in_progress')}
                       className={`btn ${submission?.status === 'in_progress' ? 'btn-ghost' : 'btn-primary'} btn-md w-full`}
                     >
-                      {submission?.status === 'in_progress' ? '🔄 Resume Exam Session' : '🚀 Start Monitored Exam'}
+                      {submission?.status === 'in_progress' ? <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12c0-5.523 4.477-10 10-10 5.522 0 10 4.477 10 10 0 5.522-4.477 10-10 10-2.822 0-5.367-1.171-7.185-3.056"></path><path d="M3 13v5h5"></path></svg><span>Resume Exam Session</span></div> : <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg><span>Start Monitored Exam</span></div>}
                     </button>
                   )}
                 </div>
@@ -225,7 +225,7 @@ export default function StudentExamList({ exams = [], submissions = [], userBatc
           })
         ) : (
           <div className="glass-card-static" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px', borderRadius: '16px' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📚</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg></div>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', marginBottom: '8px' }}>
               No {selectedTrack === 'all' ? 'Assigned' : selectedTrack.toUpperCase()} Exams Found
             </h3>
@@ -254,7 +254,7 @@ export default function StudentExamList({ exams = [], submissions = [], userBatc
           display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
         }}>
           <div className="glass-card-static" style={{ padding: '30px', maxWidth: '400px', width: '90%' }}>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '8px' }}>🔐 Protected Exam</h3>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '8px' }}><div style={{display:'flex',alignItems:'center',gap:'8px'}}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>Protected Exam</span></div></h3>
             <p style={{ color: '#475569', fontSize: '0.9rem', marginBottom: '20px' }}>
               Your instructor has protected this exam. Please enter the passcode provided to you.
             </p>
