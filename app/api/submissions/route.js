@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
 
 export async function GET(request) {
   try {
@@ -19,8 +20,7 @@ export async function GET(request) {
 
     if (profile?.role === 'teacher') {
       if (exam_id) {
-        const { data: submissions, error } = await supabase
-          .from('submissions')
+        const { data: submissions, error } = await adminSupabase.from('submissions')
           .select(`*, profiles(full_name, avatar_url)`)
           .eq('exam_id', exam_id)
         if (error) throw error
@@ -29,8 +29,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'exam_id required for teachers' }, { status: 400 })
     } else {
       if (exam_id) {
-        const { data: submission, error } = await supabase
-          .from('submissions')
+        const { data: submission, error } = await adminSupabase.from('submissions')
           .select('*')
           .eq('exam_id', exam_id)
           .eq('student_id', user.id)
@@ -38,8 +37,7 @@ export async function GET(request) {
         if (error && error.code !== 'PGRST116') throw error
         return NextResponse.json({ submission: submission || null })
       } else {
-        const { data: submissions, error } = await supabase
-          .from('submissions')
+        const { data: submissions, error } = await adminSupabase.from('submissions')
           .select(`*, exams(title, subject, duration_minutes)`)
           .eq('student_id', user.id)
         if (error) throw error
@@ -78,8 +76,7 @@ export async function POST(request) {
       
     if (examError || !exam?.is_published) return NextResponse.json({ error: 'Exam not found or published' }, { status: 404 })
 
-    const { data: existingSubmission } = await supabase
-      .from('submissions')
+    const { data: existingSubmission } = await adminSupabase.from('submissions')
       .select('*')
       .eq('exam_id', exam_id)
       .eq('student_id', user.id)
@@ -92,8 +89,7 @@ export async function POST(request) {
       return NextResponse.json({ submission: existingSubmission })
     }
 
-    const { data: submission, error } = await supabase
-      .from('submissions')
+    const { data: submission, error } = await adminSupabase.from('submissions')
       .insert({
         exam_id,
         student_id: user.id,
@@ -111,16 +107,20 @@ export async function POST(request) {
 
 export async function PATCH(request) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    
+    const adminSupabase = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    );
 
     const body = await request.json()
     const { submission_id, answers, status = 'submitted', warning_count, auto_submitted } = body
 
-    const { data: submission } = await supabase
-      .from('submissions')
+    const { data: submission } = await adminSupabase.from('submissions')
       .select('*')
       .eq('id', submission_id)
       .single()
@@ -141,7 +141,7 @@ export async function PATCH(request) {
       const answerInserts = []
 
       for (const q of questions) {
-        totalPossible += q.points
+        totalPossible += (q.points || 1)
         const student_answer = answers[q.id]
         
         let points_earned = 0
@@ -155,7 +155,7 @@ export async function PATCH(request) {
            } else {
              if (String(student_answer).trim().toLowerCase() === String(q.correct_answer).trim().toLowerCase()) {
                is_correct = true
-               points_earned = q.points
+               points_earned = (q.points || 1)
              }
            }
         }
@@ -188,10 +188,10 @@ export async function PATCH(request) {
         for (const ans of answerInserts) {
           if (existingMap.has(ans.question_id)) {
             // UPDATE
-            await supabase.from('answers').update(ans).eq('id', existingMap.get(ans.question_id));
+            await adminSupabase.from('answers').update(ans).eq('id', existingMap.get(ans.question_id));
           } else {
             // INSERT
-            await supabase.from('answers').insert(ans);
+            await adminSupabase.from('answers').insert(ans);
           }
         }
       }
@@ -208,8 +208,7 @@ export async function PATCH(request) {
     if (warning_count !== undefined) updates.warning_count = warning_count
     if (auto_submitted !== undefined) updates.auto_submitted = auto_submitted
 
-    const { data: updatedSubmission, error } = await supabase
-      .from('submissions')
+    const { data: updatedSubmission, error } = await adminSupabase.from('submissions')
       .update(updates)
       .eq('id', submission_id)
       .select()
