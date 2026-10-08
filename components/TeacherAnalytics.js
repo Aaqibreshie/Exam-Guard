@@ -3,6 +3,47 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 import { motion } from 'framer-motion';
 
 export default function TeacherAnalytics({ examStats = [], questionStats = [] }) {
+
+  const CustomExamTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div style={{ background: '#020617', border: '1px solid #1e293b', padding: '12px', borderRadius: '8px', color: '#fff', maxWidth: '300px', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)' }}>
+          <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', fontSize: '0.9rem', lineHeight: '1.4' }}>{data.fullName || data.name}</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#94a3b8' }}>
+            <span>Class Average:</span>
+            <span style={{ color: payload[0].fill, fontWeight: 'bold', marginLeft: '12px' }}>{data.average}%</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#94a3b8', marginTop: '4px' }}>
+            <span>Submissions:</span>
+            <span>{data.submissions}</span>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const CustomQuestionTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div style={{ background: '#020617', border: '1px solid #1e293b', padding: '12px', borderRadius: '8px', color: '#fff', maxWidth: '300px', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)' }}>
+          <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', fontSize: '0.9rem', lineHeight: '1.4', wordBreak: 'break-word' }}>{data.fullName || data.shortName}</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#94a3b8' }}>
+            <span>Success Rate:</span>
+            <span style={{ color: payload[0].fill, fontWeight: 'bold', marginLeft: '12px' }}>{data.successRate}%</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#94a3b8', marginTop: '4px' }}>
+            <span>Total Attempts:</span>
+            <span>{data.total}</span>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
   if (examStats.length === 0) return null;
 
   return (
@@ -28,10 +69,7 @@ export default function TeacherAnalytics({ examStats = [], questionStats = [] })
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                 <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} domain={[0, 100]} />
-                <Tooltip 
-                  cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                  contentStyle={{ background: '#020617', border: '1px solid #1e293b', borderRadius: '8px', color: '#fff' }}
-                />
+                <Tooltip content={<CustomExamTooltip />} cursor={{ fill: 'rgba(255,255,255,0.05)' }} />
                 <Bar dataKey="average" radius={[4, 4, 0, 0]} minPointSize={5} label={{ position: 'top', fill: '#94a3b8', fontSize: 12, formatter: (val) => val + '%' }}>
                   {examStats.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.average >= 70 ? '#10b981' : (entry.average >= 50 ? '#f59e0b' : '#ef4444')} />
@@ -60,11 +98,7 @@ export default function TeacherAnalytics({ examStats = [], questionStats = [] })
                   <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={true} vertical={false} />
                   <XAxis type="number" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} domain={[0, 100]} />
                   <YAxis dataKey="shortName" type="category" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} width={120} />
-                  <Tooltip 
-                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                    contentStyle={{ background: '#020617', border: '1px solid #1e293b', borderRadius: '8px', color: '#fff' }}
-                    formatter={(value) => [`${value}% Success Rate`, 'Performance']}
-                  />
+                  <Tooltip content={<CustomQuestionTooltip />} cursor={{ fill: 'rgba(255,255,255,0.05)' }} />
                   <Bar dataKey="successRate" radius={[0, 4, 4, 0]} barSize={20} minPointSize={5} label={{ position: 'right', fill: '#94a3b8', fontSize: 12, formatter: (val) => val + '%' }}>
                     {questionStats.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.successRate >= 70 ? '#10b981' : (entry.successRate >= 50 ? '#f59e0b' : '#ef4444')} />

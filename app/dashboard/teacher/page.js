@@ -76,6 +76,7 @@ export default async function TeacherDashboard() {
         const eAvg = ePossible > 0 ? Math.round((eScores / ePossible) * 100) : 0;
         examStats.push({
           name: exam.title.length > 15 ? exam.title.substring(0, 15) + '...' : exam.title,
+          fullName: exam.title,
           average: eAvg,
           submissions: examSubs.length
         });
@@ -113,6 +114,7 @@ export default async function TeacherDashboard() {
         const textStr = typeof q.text === 'string' ? q.text : 'Question';
         return {
           shortName: textStr.length > 20 ? textStr.substring(0, 20) + '...' : textStr,
+          fullName: textStr,
           successRate: Math.round((q.correct / q.total) * 100),
           total: q.total
         };
