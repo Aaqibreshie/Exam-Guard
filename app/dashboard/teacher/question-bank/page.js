@@ -12,6 +12,8 @@ export default function QuestionBankPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [userId, setUserId] = useState(null);
+  const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: "", message: "", isError: false });
+  const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, title: "", message: "", isDanger: false, onConfirm: null });
 
   // Form State
   const [showAddModal, setShowAddModal] = useState(false);
@@ -313,7 +315,7 @@ export default function QuestionBankPage() {
                 onClick={() => setCreationMode('bulk')} 
                 className={`btn btn-sm ${creationMode === 'bulk' ? 'btn-primary' : 'btn-ghost'}`}
               >
-                ⚡ Bulk Import
+                <div style={{display:'flex',alignItems:'center',gap:'6px'}}><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg><span>Bulk Import</span></div>
               </button>
               <button onClick={() => setShowAddModal(false)} className="btn btn-ghost btn-sm" style={{ marginLeft: '12px' }}>Cancel</button>
             </div>
@@ -324,16 +326,16 @@ export default function QuestionBankPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '0.85rem', color: '#64748b' }}>Load Template:</span>
                 <button type="button" onClick={() => loadSampleTemplate('coding')} className="btn btn-ghost btn-sm" style={{ padding: '4px 10px', fontSize: '0.8rem', background: '#ecfdf5', color: '#059669' }}>
-                  💻 Coding JSON
+                  <div style={{display:'flex',alignItems:'center',gap:'4px'}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg><span>Coding JSON</span></div>
                 </button>
                 <button type="button" onClick={() => loadSampleTemplate('json')} className="btn btn-ghost btn-sm" style={{ padding: '4px 10px', fontSize: '0.8rem', background: '#f5f3ff', color: '#7c3aed' }}>
-                  🔘 MCQ JSON
+                  <div style={{display:'flex',alignItems:'center',gap:'4px'}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg><span>MCQ JSON</span></div>
                 </button>
                 <button type="button" onClick={() => loadSampleTemplate('csv')} className="btn btn-ghost btn-sm" style={{ padding: '4px 10px', fontSize: '0.8rem', background: '#fffbeb', color: '#b45309' }}>
-                  📄 CSV
+                  <div style={{display:'flex',alignItems:'center',gap:'4px'}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg><span>CSV</span></div>
                 </button>
                 <button type="button" onClick={() => loadSampleTemplate('txt')} className="btn btn-ghost btn-sm" style={{ padding: '4px 10px', fontSize: '0.8rem', background: '#e0f2fe', color: '#0369a1' }}>
-                  📝 Raw Text
+                  <div style={{display:'flex',alignItems:'center',gap:'4px'}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg><span>Raw Text</span></div>
                 </button>
               </div>
 
@@ -430,7 +432,7 @@ export default function QuestionBankPage() {
         <div style={{ color: 'red', padding: '20px', background: '#fee2e2', borderRadius: '12px' }}>{error}</div>
       ) : questions.length === 0 ? (
         <div className="glass-card-static" style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📂</div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg></div>
           <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '8px' }}>Your Bank is Empty</h3>
           <p style={{ color: '#64748b' }}>Start adding questions here to reuse them across multiple exams.</p>
         </div>
