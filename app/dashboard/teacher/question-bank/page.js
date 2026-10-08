@@ -28,7 +28,6 @@ export default function QuestionBankPage() {
 
   async function fetchQuestions() {
     try {
-      setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
       setUserId(user.id);
 
