@@ -292,13 +292,13 @@ export default function QuestionBankPage() {
       {showAddModal && (
         <div className="glass-card-static" style={{ padding: '32px', marginBottom: '32px', borderLeft: '4px solid #059669' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a' }}>{editingQuestion ? '✏️ Edit Question' : 'New Question'}</h3>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a' }}>{editingQuestion ? <><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path></svg> Edit Question</> : 'New Question'}</h3>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button 
                 onClick={() => setCreationMode('single')} 
                 className={`btn btn-sm ${creationMode === 'single' ? 'btn-primary' : 'btn-ghost'}`}
               >
-                ✏️ Single Form
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path></svg> Single Form
               </button>
               <button 
                 onClick={() => setCreationMode('bulk')} 
