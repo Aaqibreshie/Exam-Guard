@@ -860,7 +860,7 @@ Points: 2`);
                     fontWeight: 700
                   }}
                 >
-                  💻 Add Live Coding Problem
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:"6px"}}><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> Add Live Coding Problem
                 </button>
                 <button
                   type="button"
@@ -871,7 +871,7 @@ Points: 2`);
                   className={`btn btn-sm ${creationMode === 'single' && qType === 'mcq' ? 'btn-primary' : 'btn-ghost'}`}
                   style={{ borderRadius: '8px' }}
                 >
-                  🔘 Add MCQ
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:"6px"}}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg> Add MCQ
                 </button>
                 <button
                   type="button"
@@ -882,7 +882,7 @@ Points: 2`);
                   className={`btn btn-sm ${creationMode === 'single' && qType === 'short_answer' ? 'btn-primary' : 'btn-ghost'}`}
                   style={{ borderRadius: '8px' }}
                 >
-                  ✍️ Add Short Answer
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:"6px"}}><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path></svg> Add Short Answer
                 </button>
                 <button
                   type="button"
@@ -890,7 +890,7 @@ Points: 2`);
                   className={`btn btn-sm ${creationMode === 'bulk' ? 'btn-primary' : 'btn-ghost'}`}
                   style={{ borderRadius: '8px' }}
                 >
-                  ⚡ Bulk Import
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:"6px"}}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Bulk Import
                 </button>
                 <button
                   type="button"
@@ -926,16 +926,16 @@ Points: 2`);
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: '0.85rem', color: '#64748b' }}>Load Sample Format:</span>
                     <button type="button" onClick={() => loadSampleTemplate('coding')} className="btn btn-ghost btn-sm" style={{ padding: '4px 10px', fontSize: '0.8rem', background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0' }}>
-                      💻 Coding Problems (JSON)
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:"6px"}}><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> Coding Problems (JSON)
                     </button>
                     <button type="button" onClick={() => loadSampleTemplate('json')} className="btn btn-ghost btn-sm" style={{ padding: '4px 10px', fontSize: '0.8rem' }}>
-                      📦 Standard JSON
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:"6px"}}><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> Standard JSON
                     </button>
                     <button type="button" onClick={() => loadSampleTemplate('text')} className="btn btn-ghost btn-sm" style={{ padding: '4px 10px', fontSize: '0.8rem' }}>
-                      📄 Plain Text / AI Quiz
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:"6px"}}><path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 3v5h5M16 13H8M16 17H8M10 9H8"/></svg> Plain Text / AI Quiz
                     </button>
                     <button type="button" onClick={() => loadSampleTemplate('csv')} className="btn btn-ghost btn-sm" style={{ padding: '4px 10px', fontSize: '0.8rem' }}>
-                      📊 CSV
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:"6px"}}><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg> CSV
                     </button>
                   </div>
 
@@ -1258,7 +1258,7 @@ Points: 2`);
 
             {questions.length === 0 ? (
               <div className="glass-card-static" style={{ textAlign: 'center', padding: '40px 20px', color: '#64748b', borderRadius: '16px' }}>
-                <div style={{ fontSize: '2rem', marginBottom: '8px' }}>📄</div>
+                <div style={{ fontSize: '2rem', marginBottom: '8px' }}><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginBottom:"12px"}}><path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 3v5h5M16 13H8M16 17H8M10 9H8"/></svg></div>
                 <p>No questions added to this exam yet. Use the bulk importer or form above to build your question paper.</p>
               </div>
             ) : (
@@ -1659,7 +1659,7 @@ Points: 2`);
                     <span>Saving Permissions...</span>
                   </>
                 ) : (
-                  <span>💾 Save Candidate Permissions</span>
+                  <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:"8px"}}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Save Candidate Permissions</span>
                 )}
               </button>
             </div>
