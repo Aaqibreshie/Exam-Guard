@@ -29,6 +29,7 @@ export default async function StudentLayout({ children }) {
       <main className="dashboard-content">
         {children}
       </main>
+      <DashboardFooter />
     </div>
   );
 }
