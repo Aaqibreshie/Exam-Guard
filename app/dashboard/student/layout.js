@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import Navbar from '@/components/Navbar';
+import DashboardFooter from '@/components/DashboardFooter';
 
 export default async function StudentLayout({ children }) {
   const supabase = await createClient();
