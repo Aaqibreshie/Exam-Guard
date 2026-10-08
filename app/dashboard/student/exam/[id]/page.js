@@ -402,65 +402,43 @@ export default function TakeExamPage({ params }) {
         return;
       }
 
-      const gradedList = results?.graded_answers || results?.details || [];
-      const answersToInsert = gradedList.map(res => ({
-        submission_id: subId,
-        question_id: res.question_id,
-        student_answer: currentAnswers[res.question_id] || '',
-        is_correct: res.is_correct,
-        points_earned: res.points_earned
-      }));
-
-      if (answersToInsert.length > 0) {
-        await supabase.from('answers').upsert(answersToInsert, { onConflict: 'submission_id,question_id' });
-      }
-
-      const status = expelled ? 'expelled' : 'submitted';
-      const finalScore = results.score ?? results.totalScore ?? 0;
-      const finalTotal = results.total_possible ?? results.totalPossible ?? (exam?.total_marks || 0);
-      const finalPercentage = results.percentage ?? (finalTotal > 0 ? Math.round((finalScore / finalTotal) * 100) : 0);
-
-      await supabase
-        .from('submissions')
-        .update({
-          submitted_at: new Date().toISOString(),
-          score: finalScore,
-          total_possible: finalTotal,
-          percentage: finalPercentage,
-          status,
+      const response = await fetch('/api/submissions', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          submission_id: subId,
+          answers: currentAnswers,
+          status: expelled ? 'expelled' : 'submitted',
+          warning_count: warningCount,
           auto_submitted: auto
         })
-        .eq('id', subId);
-
-      setScoreData({
-        percentage: finalPercentage,
-        score: finalScore,
-        total: finalTotal,
-        status
       });
+      
+      const responseData = await response.json();
+      if (!response.ok) throw new Error(responseData.error || 'Failed to submit exam');
 
-      // Construct immediate review structure
+      const gradedList = results?.graded_answers || results?.details || [];
       const reviewItems = qList.map(q => {
-        const studentAns = answers[q.id] || '';
-        const graded = gradedList.find(g => g.question_id === q.id) || {};
-        const correctAns = q.correct_answer || '';
-        const isCorrect = graded.is_correct !== undefined && graded.is_correct !== null
-          ? graded.is_correct
-          : (correctAns && String(studentAns).trim().toLowerCase() === String(correctAns).trim().toLowerCase());
-        
+        const studentAns = currentAnswers[q.id] || '';
+        const graded = gradedList.find(g => g.question_id === q.id);
         return {
           id: q.id,
           question_text: q.question_text,
-          question_type: q.question_type,
-          options: q.options,
-          correct_answer: correctAns,
-          points: q.points || 1,
+          options: q.options || [],
+          correct_answer: q.correct_answer,
           student_answer: studentAns,
-          is_correct: isCorrect,
-          points_earned: graded.points_earned !== undefined ? graded.points_earned : (isCorrect ? (q.points || 1) : 0),
+          is_correct: graded?.is_correct,
+          points_earned: graded?.points_earned
         };
       });
 
+      setScoreData({
+        percentage: responseData.submission.percentage,
+        score: responseData.submission.score,
+        total: responseData.submission.total_possible,
+        status: responseData.submission.status
+      });
+      
       setReviewData(reviewItems);
       setIsCompleted(true);
     } catch (err) {
