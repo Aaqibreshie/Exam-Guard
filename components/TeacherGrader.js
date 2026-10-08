@@ -2,9 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { AlertModal } from '@/components/Modal';
 
 export default function TeacherGrader({ submissionId, examId, onGradeUpdated }) {
   const [loading, setLoading] = useState(true);
+  const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
+  const showAlert = (message, title = 'Notification', isError = false) => setAlertConfig({ isOpen: true, title, message, isError });
   const [breakdown, setBreakdown] = useState([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -14,7 +17,7 @@ export default function TeacherGrader({ submissionId, examId, onGradeUpdated }) 
     fetchReviewData();
   }, [submissionId]);
 
-  const fetchReviewData = async () => {
+  async function fetchReviewData() {
     try {
       setLoading(true);
       setError(null);
@@ -75,10 +78,10 @@ export default function TeacherGrader({ submissionId, examId, onGradeUpdated }) 
         onGradeUpdated();
       }
       
-      alert('Grades saved successfully!');
+      showAlert('Grades saved successfully!', 'Success');
     } catch (err) {
       console.error(err);
-      alert('Error saving grades: ' + err.message);
+      showAlert('Error saving grades: ' + err.message, 'Error', true);
     } finally {
       setSaving(false);
     }
@@ -242,6 +245,14 @@ export default function TeacherGrader({ submissionId, examId, onGradeUpdated }) 
           );
         })}
       </div>
+
+      <AlertModal 
+        isOpen={alertConfig.isOpen}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        isError={alertConfig.isError}
+        onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+      />
     </div>
   );
 }

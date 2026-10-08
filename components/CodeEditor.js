@@ -36,12 +36,15 @@ export default function CodeEditor({
   };
 
   const handleReset = () => {
-    if (confirm('Reset your code to the original template? Current changes will be overwritten.')) {
-      const resetVal = starterCode || '';
-      setCode(resetVal);
-      if (onChange) onChange(resetVal);
-      setTestResults(null);
-    }
+    setShowResetConfirm(true);
+  };
+  
+  const confirmReset = () => {
+    const resetVal = starterCode || '';
+    setCode(resetVal);
+    if (onChange) onChange(resetVal);
+    setTestResults(null);
+    setShowResetConfirm(false);
   };
 
   const handleRun = async () => {
@@ -334,6 +337,16 @@ export default function CodeEditor({
           )}
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={showResetConfirm}
+        title="Reset Code"
+        message="Reset your code to the original template? Current changes will be overwritten."
+        isDanger={true}
+        onConfirm={confirmReset}
+        onCancel={() => setShowResetConfirm(false)}
+        confirmText="Reset Code"
+      />
     </div>
   );
 }

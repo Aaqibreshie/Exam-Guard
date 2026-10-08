@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { getSubjectStyling } from '@/lib/subject-helpers';
+import { ConfirmModal } from '@/components/Modal';
 import BankImportModal from '@/components/BankImportModal';
 
 export default function TeacherExamDetailPage({ params }) {
@@ -49,6 +50,7 @@ export default function TeacherExamDetailPage({ params }) {
   const [savingCandidates, setSavingCandidates] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [questionToDelete, setQuestionToDelete] = useState(null);
   const [error, setError] = useState('');
   const [notification, setNotification] = useState({ message: '', type: 'success' });
 
@@ -574,9 +576,14 @@ export default function TeacherExamDetailPage({ params }) {
     reader.readAsText(file);
   };
 
-  const handleDeleteQuestion = async (qId, points) => {
-    if (!confirm('Are you sure you want to delete this question?')) return;
+  const triggerDeleteQuestion = (qId, points) => {
+    setQuestionToDelete({ id: qId, points });
+  };
 
+  const confirmDeleteQuestion = async () => {
+    if (!questionToDelete) return;
+    const { id: qId, points } = questionToDelete;
+    
     try {
       const { error } = await supabase.from('questions').delete().eq('id', qId);
       if (error) throw error;
@@ -589,6 +596,8 @@ export default function TeacherExamDetailPage({ params }) {
       showNotification('Question deleted.');
     } catch (err) {
       showNotification(err.message, 'error');
+    } finally {
+      setQuestionToDelete(null);
     }
   };
 
@@ -1290,7 +1299,7 @@ Points: 2`);
                 {questions.map((q, i) => (
                   <div key={q.id} className="glass-card" style={{ padding: '24px', position: 'relative' }}>
                     <button 
-                      onClick={() => handleDeleteQuestion(q.id, q.points)}
+                      onClick={() => triggerDeleteQuestion(q.id, q.points)}
                       style={{ 
                         position: 'absolute', 
                         top: '20px', 
@@ -1690,6 +1699,16 @@ Points: 2`);
           </div>
         </div>
       )}
+
+      <ConfirmModal 
+        isOpen={!!questionToDelete} 
+        title="Delete Question" 
+        message="Are you sure you want to delete this question? This action cannot be undone." 
+        onConfirm={confirmDeleteQuestion} 
+        onCancel={() => setQuestionToDelete(null)} 
+        confirmText="Delete" 
+        isDanger={true} 
+      />
 
       {/* Delete Exam Confirmation Modal */}
       {showDeleteModal && (

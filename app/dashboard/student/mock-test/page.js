@@ -132,9 +132,23 @@ export default function MockTestPage() {
   // Submit and Evaluate Mock Test
   const handleFinishTest = async (auto = false) => {
     if (!activeTest) return;
-    if (!auto && !confirm('Are you ready to submit your AI Mock Test for evaluation?')) {
+    if (!auto) {
+      setConfirmConfig({
+        isOpen: true,
+        title: 'Submit Mock Test',
+        message: 'Are you ready to submit your AI Mock Test for evaluation?',
+        isDanger: false,
+        onConfirm: () => {
+          setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+          executeFinishTest(false);
+        }
+      });
       return;
     }
+    executeFinishTest(auto);
+  };
+  
+  const executeFinishTest = async (auto = false) => {
 
     setIsEvaluating(true);
 
@@ -230,7 +244,7 @@ export default function MockTestPage() {
       localStorage.setItem('examguard_mock_history', JSON.stringify(updatedHistory));
     } catch (err) {
       console.error('Error evaluating mock test:', err);
-      alert('Error scoring mock test: ' + err.message);
+      showAlert('Error scoring mock test: ' + err.message, 'Error', true);
     } finally {
       setIsEvaluating(false);
     }
@@ -1199,6 +1213,23 @@ export default function MockTestPage() {
           </div>
         </div>
       )}
+
+      <AlertModal 
+        isOpen={alertConfig.isOpen}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        isError={alertConfig.isError}
+        onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+      />
+      <ConfirmModal
+        isOpen={confirmConfig.isOpen}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        isDanger={confirmConfig.isDanger}
+        onConfirm={confirmConfig.onConfirm}
+        onCancel={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+        confirmText="Submit"
+      />
     </div>
   );
 }

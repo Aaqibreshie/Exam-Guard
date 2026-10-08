@@ -5,10 +5,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { getSubjectStyling } from '@/lib/subject-helpers';
+import { AlertModal } from '@/components/Modal';
 
 export default function ExamCard({ exam, role, href, onDeleted }) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const router = useRouter();
   const supabase = createClient();
   const subjectStyle = getSubjectStyling(exam.subject);
@@ -37,7 +39,7 @@ export default function ExamCard({ exam, role, href, onDeleted }) {
         router.refresh();
       }
     } catch (err) {
-      alert(`Failed to remove exam: ${err.message}`);
+      setErrorMsg(`Failed to remove exam: ${err.message}`);
       setDeleting(false);
       setShowDeleteModal(false);
     }
@@ -214,6 +216,16 @@ export default function ExamCard({ exam, role, href, onDeleted }) {
           </div>
         </div>
       </div>
+    )}
+
+    {errorMsg && (
+      <AlertModal 
+        isOpen={!!errorMsg}
+        title="Error"
+        message={errorMsg}
+        isError={true}
+        onClose={() => setErrorMsg('')}
+      />
     )}
     </>
   );

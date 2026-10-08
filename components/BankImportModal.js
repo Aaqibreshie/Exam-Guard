@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { getSubjectStyling } from '@/lib/subject-helpers';
+import { AlertModal } from '@/components/Modal';
 
 export default function BankImportModal({ examId, examSubject, onImportSuccess, onCancel }) {
   const supabase = createClient();
@@ -11,6 +12,7 @@ export default function BankImportModal({ examId, examSubject, onImportSuccess, 
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [importing, setImporting] = useState(false);
   const [filterSubject, setFilterSubject] = useState(examSubject || '');
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     fetchBank();
@@ -26,7 +28,7 @@ export default function BankImportModal({ examId, examSubject, onImportSuccess, 
       if (error) throw error;
       setBankQuestions(data || []);
     } catch (err) {
-      alert(err.message);
+      setErrorMsg(err.message);
     } finally {
       setLoading(false);
     }
@@ -66,7 +68,7 @@ export default function BankImportModal({ examId, examSubject, onImportSuccess, 
       
       if (onImportSuccess) onImportSuccess(data);
     } catch (err) {
-      alert(err.message);
+      setErrorMsg(err.message);
     } finally {
       setImporting(false);
     }
@@ -141,6 +143,14 @@ export default function BankImportModal({ examId, examSubject, onImportSuccess, 
       >
         {importing ? 'Importing...' : `Import ${selectedIds.size} Question${selectedIds.size !== 1 ? 's' : ''}`}
       </button>
+
+      <AlertModal 
+        isOpen={!!errorMsg}
+        title="Error"
+        message={errorMsg}
+        isError={true}
+        onClose={() => setErrorMsg('')}
+      />
     </div>
   );
 }

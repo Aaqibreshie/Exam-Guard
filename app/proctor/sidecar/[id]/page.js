@@ -65,7 +65,7 @@ export default function MobileSidecarPage({ params }) {
     };
   }, [submissionId, facingMode]);
 
-  const startCamera = async (mode) => {
+  async function startCamera(mode) {
     try {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(t => t.stop());

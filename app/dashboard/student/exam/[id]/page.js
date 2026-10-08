@@ -27,6 +27,7 @@ export default function TakeExamPage({ params }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [scoreData, setScoreData] = useState(null);
+  const [confirmSubmit, setConfirmSubmit] = useState(false);
   const [reviewData, setReviewData] = useState([]);
   const [reviewFilter, setReviewFilter] = useState('all'); // 'all' | 'correct' | 'incorrect'
   const [examStarted, setExamStarted] = useState(false);
@@ -1047,9 +1048,7 @@ export default function TakeExamPage({ params }) {
           <button
             type="button"
             onClick={() => {
-              if (confirm('Are you sure you want to submit your examination now?')) {
-                submitExamData(false, false);
-              }
+              setConfirmSubmit(true);
             }}
             disabled={isSubmitting}
             className="btn btn-primary btn-sm"
@@ -1176,9 +1175,7 @@ export default function TakeExamPage({ params }) {
                   <button
                     type="button"
                     onClick={() => {
-                      if (confirm('Are you ready to finalize and submit this exam?')) {
-                        submitExamData(false, false);
-                      }
+                      setConfirmSubmit(true);
                     }}
                     className="btn btn-primary btn-md"
                     style={{ background: '#059669' }}
@@ -1296,6 +1293,19 @@ export default function TakeExamPage({ params }) {
           </button>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={confirmSubmit}
+        title="Submit Examination"
+        message="Are you ready to finalize and submit this exam? You will not be able to change your answers."
+        isDanger={false}
+        onConfirm={() => {
+          setConfirmSubmit(false);
+          submitExamData(false, false);
+        }}
+        onCancel={() => setConfirmSubmit(false)}
+        confirmText="Submit Exam"
+      />
     </div>
   );
 }

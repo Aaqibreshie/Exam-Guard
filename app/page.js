@@ -55,7 +55,7 @@ export default function Home() {
         {/* Hero Section */}
         <section className="hero-section">
           <div className="hero-badge">
-            <span>🛡️</span> The world's most secure online exam system
+            <span>🛡️</span> The world&apos;s most secure online exam system
           </div>
 
           <h1 className="hero-title">
