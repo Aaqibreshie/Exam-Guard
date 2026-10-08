@@ -255,9 +255,10 @@ export default function QuestionBankPage() {
       setQAnswer('');
       setQSubject('General');
       
-      // Optimistic update
-      setQuestions(prev => prev.map(q => q.id === editingQuestion.id ? { ...q, ...updatedQ } : q));
-      fetchQuestions();
+      // Update state with exact DB return to avoid cache issues
+      if (updData && updData.length > 0) {
+        setQuestions(prev => prev.map(q => q.id === editingQuestion.id ? updData[0] : q));
+      }
     } catch (err) {
       alert(err.message);
     } finally {
