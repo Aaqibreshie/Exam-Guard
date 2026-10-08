@@ -31,8 +31,8 @@ export default function CreateExamPage() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      const formatTag = examFormat === 'coding' ? '[Coding Practical]' : examFormat === 'hybrid' ? '[Hybrid Assessment]' : '[Theory MCQ]';
-      const formattedTitle = title.includes('[') ? title : `${formatTag} ${title}`;
+      // No longer prepending bracket tags to titles
+      const formattedTitle = title;
 
       const { data, error: insertError } = await supabase
         .from('exams')
