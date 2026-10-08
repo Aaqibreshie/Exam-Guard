@@ -237,10 +237,15 @@ export default function QuestionBankPage() {
         subject: qSubject
       };
 
-      const { error: updErr } = await supabase
+      const { error: updErr, data: updData } = await supabase
         .from('question_bank')
         .update(updatedQ)
-        .eq('id', editingQuestion.id);
+        .eq('id', editingQuestion.id)
+        .select();
+        
+      if (updData && updData.length === 0) {
+        alert("Warning: 0 rows were updated. You might not have permission to edit this question (e.g., if another teacher created it).");
+      }
 
       if (updErr) throw updErr;
       
