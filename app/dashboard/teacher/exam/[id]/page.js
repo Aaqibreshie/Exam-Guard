@@ -720,7 +720,7 @@ Points: 2`);
                 borderColor: getSubjectStyling(exam.subject).border
               }}>{getSubjectStyling(exam.subject).label}</span>
               <span className={`badge-status ${exam.is_published ? 'badge-published' : 'badge-draft'}`}>
-                {exam.is_published ? '● Published (Live)' : '○ Draft Mode'}
+                {exam.is_published ? <><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:"4px", display:"inline-block", verticalAlign:"middle", marginTop:"-2px"}}><circle cx="12" cy="12" r="10"></circle></svg> Published (Live)</> : <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:"4px", display:"inline-block", verticalAlign:"middle", marginTop:"-2px"}}><circle cx="12" cy="12" r="10"></circle></svg> Draft Mode</>}
               </span>
               <span style={{ 
                 fontSize: '0.75rem', 
@@ -731,7 +731,7 @@ Points: 2`);
                 border: '1px solid #a7f3d0',
                 fontWeight: 600
               }}>
-                🔒 {accessType === 'all' ? 'All Students' : accessType === 'batch' ? `Batch: ${allowedBatch}` : `${selectedCandidateIds.size} Selected Students`}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:"4px", display:"inline-block", verticalAlign:"middle", marginTop:"-2px"}}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> {accessType === 'all' ? 'All Students' : accessType === 'batch' ? `Batch: ${allowedBatch}` : `${selectedCandidateIds.size} Selected Students`}
               </span>
             </div>
             <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
@@ -1407,7 +1407,7 @@ Points: 2`);
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '1.25rem' }}>🌐</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={accessType === 'all' ? '#059669' : '#cbd5e1'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
                     <strong style={{ color: accessType === 'all' ? '#059669' : '#0f172a' }}>Open to All Students</strong>
                   </div>
                   <p style={{ color: '#475569', fontSize: '0.85rem', margin: 0 }}>
@@ -1447,7 +1447,7 @@ Points: 2`);
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '1.25rem' }}>🎯</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={accessType === 'selected' ? '#059669' : '#cbd5e1'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
                     <strong style={{ color: accessType === 'selected' ? '#059669' : '#0f172a' }}>Selected Candidates Only</strong>
                   </div>
                   <p style={{ color: '#475569', fontSize: '0.85rem', margin: 0 }}>
