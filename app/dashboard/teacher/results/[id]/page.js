@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, use, Fragment } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { getSubjectStyling } from '@/lib/subject-helpers';
 import Link from 'next/link';
 import TeacherGrader from '@/components/TeacherGrader';
 
@@ -18,7 +19,7 @@ export default function ExamResultsPage({ params }) {
     fetchResults();
   }, [id]);
 
-  const fetchResults = async () => {
+  async function fetchResults() {
     try {
       const { data: examData, error: examError } = await supabase
         .from('exams')
@@ -112,8 +113,15 @@ export default function ExamResultsPage({ params }) {
   return (
     <div className="dashboard-container" style={{ maxWidth: '1140px' }}>
       <div style={{ marginBottom: '24px' }}>
-        <Link href={`/dashboard/teacher/exam/${id}`} className="btn btn-ghost btn-sm">
-          ← Back to Exam Paper & Candidate Settings
+        <Link href={`/dashboard/teacher/exam/${id}`} className="btn btn-ghost" style={{ 
+            display: 'inline-flex', alignItems: 'center', gap: '8px', 
+            padding: '8px 16px', borderRadius: '8px', 
+            border: '1px solid #e2e8f0', color: '#64748b', 
+            fontWeight: 600, fontSize: '0.9rem',
+            background: '#ffffff', boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
+          }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          Back to Exam Paper & Candidate Settings
         </Link>
       </div>
 
@@ -122,15 +130,15 @@ export default function ExamResultsPage({ params }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-              <span className="badge-subject">{exam.subject?.toUpperCase()}</span>
-              <span className="badge-status badge-published">● AI Proctor Monitored</span>
+              <span className="badge-subject" style={{background: getSubjectStyling(exam.subject).bg, color: getSubjectStyling(exam.subject).color, borderColor: getSubjectStyling(exam.subject).border}}>{getSubjectStyling(exam.subject).label}</span>
+              <span className="badge-status badge-published"><><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:"4px", display:"inline-block", verticalAlign:"text-top", marginTop:"2px"}}><circle cx="12" cy="12" r="10"></circle></svg> AI Proctor Monitored</></span>
               {exam.require_phone_sidecar && (
                 <span style={{ fontSize: '0.75rem', padding: '3px 8px', borderRadius: '12px', background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', fontWeight: 600 }}>
-                  📱 Dual-Angle Sidecar Enforced
+                  <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:"4px", display:"inline-block", verticalAlign:"text-top", marginTop:"1px"}}><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg> Dual-Angle Sidecar Enforced</>
                 </span>
               )}
             </div>
-            <h1 style={{ fontSize: '1.85rem', fontWeight: 800, color: '#0f172a' }}>{exam.title}</h1>
+            <h1 style={{ fontSize: '1.85rem', fontWeight: 800, color: '#0f172a' }}>{exam.title?.replace(/^\[.*?\]\s*/i, '')}</h1>
             <p style={{ color: '#475569', fontSize: '0.9rem', marginTop: '4px' }}>
               Comprehensive performance evaluation and multi-sensor integrity audit
             </p>
@@ -182,7 +190,7 @@ export default function ExamResultsPage({ params }) {
             {submissions.length === 0 ? (
               <tr>
                 <td colSpan="7" style={{ padding: '50px', textAlign: 'center', color: '#64748b' }}>
-                  <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>📝</div>
+                  <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 3v5h5M16 13H8M16 17H8M10 9H8"/></svg></div>
                   No candidates have submitted this examination yet.
                 </td>
               </tr>
@@ -239,7 +247,7 @@ export default function ExamResultsPage({ params }) {
                           color: isExpelled ? '#e11d48' : '#059669',
                           borderColor: isExpelled ? '#fecdd3' : '#a7f3d0'
                         }}>
-                          {isExpelled ? '❌ Expelled' : '✅ Verified'}
+                          {isExpelled ? <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:"4px", display:"inline-block", verticalAlign:"text-top", marginTop:"2px"}}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Expelled</> : <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:"4px", display:"inline-block", verticalAlign:"text-top", marginTop:"2px"}}><polyline points="20 6 9 17 4 12"></polyline></svg> Verified</>}
                         </span>
                       </td>
 
@@ -253,7 +261,7 @@ export default function ExamResultsPage({ params }) {
                           color: integrityScore >= 80 ? '#059669' : integrityScore >= 50 ? '#d97706' : '#e11d48',
                           border: `1px solid ${integrityScore >= 80 ? '#a7f3d0' : integrityScore >= 50 ? '#fde68a' : '#fecdd3'}`
                         }}>
-                          🛡️ {integrityScore}%
+                          <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:"4px", display:"inline-block", verticalAlign:"text-top", marginTop:"2px"}}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> {integrityScore}%</>
                         </span>
                       </td>
 
@@ -269,12 +277,12 @@ export default function ExamResultsPage({ params }) {
 
                       <td style={{ padding: '16px' }}>
                         <button
-                          type="button"
-                          className="btn btn-ghost btn-sm"
-                          style={{ fontSize: '0.8rem', padding: '4px 10px' }}
-                        >
-                          {isExpanded ? 'Hide Logs ▲' : 'Audit Logs ▼'}
-                        </button>
+    type="button"
+    className="btn btn-ghost"
+    style={{ fontSize: '0.8rem', padding: '6px 12px', borderRadius: '6px', border: '1px solid #e2e8f0', background: isExpanded ? '#f1f5f9' : '#ffffff', color: '#475569', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}
+  >
+    {isExpanded ? <><span style={{marginRight: "2px"}}>Hide Logs</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{display:"inline-block"}}><polyline points="18 15 12 9 6 15"></polyline></svg></> : <><span style={{marginRight: "2px"}}>Audit Logs</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{display:"inline-block"}}><polyline points="6 9 12 15 18 9"></polyline></svg></>}
+  </button>
                       </td>
                     </tr>
 
@@ -284,7 +292,7 @@ export default function ExamResultsPage({ params }) {
                         <td colSpan="7" style={{ padding: '20px 24px', background: '#f8fafc', borderBottom: '1px solid #eaecf0' }}>
                           <div style={{ marginBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <strong style={{ color: '#0f172a', fontSize: '0.9rem' }}>
-                              🔍 Sensor & Anti-Cheat Audit Trail ({logs.length} events logged)
+                              <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:"6px", display:"inline-block", verticalAlign:"text-top", marginTop:"2px", color: '#64748b'}}><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Sensor &</> Anti-Cheat Audit Trail ({logs.length} events logged)
                             </strong>
                             <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
                               Session: {new Date(sub.started_at).toLocaleTimeString()} → {sub.submitted_at ? new Date(sub.submitted_at).toLocaleTimeString() : 'Active'}
@@ -293,7 +301,7 @@ export default function ExamResultsPage({ params }) {
 
                           {logs.length === 0 ? (
                             <div style={{ padding: '14px 16px', background: '#ffffff', borderRadius: '8px', border: '1px solid #bbf7d0', color: '#059669', fontSize: '0.85rem', fontWeight: 600 }}>
-                              ✅ Clean Session: No face deviation, tab switches, or script injections detected throughout the exam.
+                              <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:"6px", display:"inline-block", verticalAlign:"text-top", marginTop:"2px"}}><polyline points="20 6 9 17 4 12"></polyline></svg> Clean Session:</> No face deviation, tab switches, or script injections detected throughout the exam.
                             </div>
                           ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
