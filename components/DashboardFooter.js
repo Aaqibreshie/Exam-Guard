@@ -1,4 +1,4 @@
-'use client';n
+'use client';
 export default function DashboardFooter() {
   const currentYear = new Date().getFullYear();
   
