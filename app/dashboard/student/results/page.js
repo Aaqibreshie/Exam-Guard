@@ -164,7 +164,7 @@ export default function StudentResults() {
                   <div style={{ flex: 1, minWidth: '240px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
                       <span className="badge-subject">{examSubject}</span>
-                      <span className={`badge-status ${isExpelled ? 'badge-draft' : 'badge-published'}`} style={{
+                      <span className={`badge-status ${isExpelled ? 'badge-draft' : 'badge-published'}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px',
                         background: isExpelled ? '#fff1f2' : '#ecfdf5',
                         color: isExpelled ? '#e11d48' : '#059669',
                         borderColor: isExpelled ? '#fecdd3' : '#a7f3d0'
