@@ -110,8 +110,8 @@ export default function PracticeArenaPage() {
             onChange={e => setFilterStatus(e.target.value)}
           >
             <option value="">All Statuses</option>
-            <option value="solved">✅ Solved</option>
-            <option value="unsolved">❌ Unsolved</option>
+            <option value="solved">Solved</option>
+            <option value="unsolved">Unsolved</option>
           </select>
         </div>
       </div>
@@ -140,7 +140,7 @@ export default function PracticeArenaPage() {
                   <tr key={q.id} style={{ borderBottom: '1px solid #e2e8f0', transition: 'background 0.2s' }}>
                     <td style={{ padding: '16px 24px' }}>
                       {isSolved ? (
-                        <span style={{ color: '#10b981', fontSize: '1.2rem' }}>✅</span>
+                        <span style={{ color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
                       ) : (
                         <span style={{ color: '#cbd5e1', fontSize: '1.2rem' }}>-</span>
                       )}
