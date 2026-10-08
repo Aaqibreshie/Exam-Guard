@@ -1387,28 +1387,46 @@ Points: 2`);
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {questions.map((q, i) => (
                   <div key={q.id} className="glass-card" style={{ padding: '24px', position: 'relative' }}>
-                    <button 
-                      onClick={() => triggerDeleteQuestion(q.id, q.points)}
-                      style={{ 
-                        position: 'absolute', 
-                        top: '20px', 
-                        right: '20px', 
-                        background: '#fff1f2', 
-                        border: '1px solid #fecdd3', 
-                        color: '#e11d48', 
-                        cursor: 'pointer', 
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '6px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 'bold'
-                      }}
-                      title="Delete question"
-                    >
-                      ✕
-                    </button>
+                    <div style={{ position: 'absolute', top: '20px', right: '20px', display: 'flex', gap: '8px' }}>
+                      <button 
+                        onClick={() => handleEditQuestionClick(q)}
+                        style={{ 
+                          background: '#eff6ff', 
+                          border: '1px solid #bfdbfe', 
+                          color: '#3b82f6', 
+                          cursor: 'pointer', 
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.15s ease'
+                        }}
+                        title="Edit question"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                      </button>
+                      <button 
+                        onClick={() => triggerDeleteQuestion(q.id, q.points)}
+                        style={{ 
+                          background: '#fff1f2', 
+                          border: '1px solid #fecdd3', 
+                          color: '#e11d48', 
+                          cursor: 'pointer', 
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.15s ease'
+                        }}
+                        title="Delete question"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                      </button>
+                    </div>
                     
                     <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '12px' }}>
                       <span style={{ fontWeight: 700, color: '#059669', fontSize: '0.95rem' }}>Q{i + 1}</span>
