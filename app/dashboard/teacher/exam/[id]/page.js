@@ -25,6 +25,7 @@ export default function TeacherExamDetailPage({ params }) {
   // UI Tabs & Modes
   const [activeTab, setActiveTab] = useState('questions'); // 'questions' | 'candidates'
   const [creationMode, setCreationMode] = useState('bulk'); // 'bulk' | 'single'
+  const [editingQuestionId, setEditingQuestionId] = useState(null);
   
   // Single Question Form State
   const [qType, setQType] = useState('mcq');
@@ -270,44 +271,76 @@ export default function TeacherExamDetailPage({ params }) {
       const points = parseInt(qPoints) || 1;
       const isCodeType = qType === 'project' || qType === 'coding';
       const newQ = {
-        exam_id: id,
         question_text: qText.trim(),
         question_type: qType,
         options: isCodeType ? { language: qLanguage } : options,
         correct_answer: correctAnswer,
         points,
-        order_index: questions.length,
         starter_code: isCodeType ? starterCode : null,
         test_cases: isCodeType ? validTestCases : []
       };
 
-      let insertedData = null;
-      try {
-        const { data, error } = await supabase.from('questions').insert([newQ]).select().single();
-        if (error) throw error;
-        insertedData = data;
-      } catch (insertErr) {
-        // Fallback: If DB table violates check constraint or lacks columns, store as 'project' with options JSONB
-        const errMsg = String(insertErr?.message || '');
-        const fallbackQ = {
-          exam_id: id,
-          question_text: qText.trim(),
-          question_type: (qType === 'coding') ? 'project' : qType,
-          options: isCodeType ? { is_coding: true, starter_code: starterCode, test_cases: validTestCases, language: qLanguage } : options,
-          correct_answer: isCodeType ? null : correctAnswer,
-          points,
-          order_index: questions.length
-        };
-        const { data: fbData, error: fbErr } = await supabase.from('questions').insert([fallbackQ]).select().single();
-        if (fbErr) throw fbErr;
-        insertedData = { ...fbData, question_type: qType, starter_code: starterCode, test_cases: validTestCases };
+      if (editingQuestionId) {
+        // UPDATE MODE
+        let updatedData = null;
+        try {
+          const { data, error } = await supabase.from('questions').update(newQ).eq('id', editingQuestionId).select().single();
+          if (error) throw error;
+          updatedData = data;
+        } catch (updateErr) {
+          const fallbackQ = {
+            question_text: qText.trim(),
+            question_type: (qType === 'coding') ? 'project' : qType,
+            options: isCodeType ? { is_coding: true, starter_code: starterCode, test_cases: validTestCases, language: qLanguage } : options,
+            correct_answer: isCodeType ? null : correctAnswer,
+            points
+          };
+          const { data: fbData, error: fbErr } = await supabase.from('questions').update(fallbackQ).eq('id', editingQuestionId).select().single();
+          if (fbErr) throw fbErr;
+          updatedData = { ...fbData, question_type: qType, starter_code: starterCode, test_cases: validTestCases };
+        }
+        
+        const oldPoints = questions.find(q => q.id === editingQuestionId)?.points || 0;
+        if (points !== oldPoints) {
+            const updatedMarks = Math.max(0, (exam.total_marks || 0) - oldPoints + points);
+            await supabase.from('exams').update({ total_marks: updatedMarks }).eq('id', id);
+            setExam({ ...exam, total_marks: updatedMarks });
+        }
+        
+        setQuestions(questions.map(q => q.id === editingQuestionId ? updatedData : q));
+        showNotification('Question updated successfully!');
+        setEditingQuestionId(null);
+      } else {
+        // INSERT MODE
+        newQ.exam_id = id;
+        newQ.order_index = questions.length;
+        let insertedData = null;
+        try {
+          const { data, error } = await supabase.from('questions').insert([newQ]).select().single();
+          if (error) throw error;
+          insertedData = data;
+        } catch (insertErr) {
+          const fallbackQ = {
+            exam_id: id,
+            question_text: qText.trim(),
+            question_type: (qType === 'coding') ? 'project' : qType,
+            options: isCodeType ? { is_coding: true, starter_code: starterCode, test_cases: validTestCases, language: qLanguage } : options,
+            correct_answer: isCodeType ? null : correctAnswer,
+            points,
+            order_index: questions.length
+          };
+          const { data: fbData, error: fbErr } = await supabase.from('questions').insert([fallbackQ]).select().single();
+          if (fbErr) throw fbErr;
+          insertedData = { ...fbData, question_type: qType, starter_code: starterCode, test_cases: validTestCases };
+        }
+  
+        const updatedMarks = (exam.total_marks || 0) + points;
+        await supabase.from('exams').update({ total_marks: updatedMarks }).eq('id', id);
+        setExam({ ...exam, total_marks: updatedMarks });
+        setQuestions([...questions, insertedData]);
+        showNotification('Question added successfully!');
       }
 
-      const updatedMarks = (exam.total_marks || 0) + points;
-      await supabase.from('exams').update({ total_marks: updatedMarks }).eq('id', id);
-      setExam({ ...exam, total_marks: updatedMarks });
-      setQuestions([...questions, insertedData]);
-      
       setQText('');
       setMcqOptions(['', '', '', '']);
       setMcqCorrect(0);
@@ -317,7 +350,6 @@ export default function TeacherExamDetailPage({ params }) {
         { input: '[1, 2, 3]', expected_output: '[3, 2, 1]', description: 'Sample Test Case 1', hidden: false }
       ]);
       setQPoints(1);
-      showNotification('Question added successfully!');
     } catch (err) {
       showNotification(err.message, 'error');
     } finally {
@@ -325,7 +357,53 @@ export default function TeacherExamDetailPage({ params }) {
     }
   };
 
-  const handleAddTestCase = () => {
+  const handleCancelEdit = () => {
+    setEditingQuestionId(null);
+    setQText('');
+    setMcqOptions(['', '', '', '']);
+    setMcqCorrect(0);
+    setShortAnswerCorrect('');
+    setQPoints(1);
+  };
+
+  const handleEditQuestionClick = (q) => {
+    setEditingQuestionId(q.id);
+    setActiveTab('questions');
+    setCreationMode('single');
+    setQType(q.question_type === 'project' ? (q.options?.is_coding ? 'coding' : 'project') : q.question_type);
+    setQText(q.question_text);
+    setQPoints(q.points || 1);
+    
+    if (q.question_type === 'mcq' && q.options) {
+      const opts = [...q.options];
+      while (opts.length < 4) opts.push('');
+      setMcqOptions(opts.slice(0, 4));
+      setMcqCorrect(Math.max(0, q.options.indexOf(q.correct_answer)));
+    } else {
+      setMcqOptions(['', '', '', '']);
+      setMcqCorrect(0);
+    }
+    
+    if (q.question_type === 'short_answer') {
+      setShortAnswerCorrect(q.correct_answer || '');
+    } else {
+      setShortAnswerCorrect('');
+    }
+    
+    if (q.question_type === 'project' && q.options?.is_coding) {
+      setQLanguage(q.options?.language || 'javascript');
+      setStarterCode(q.starter_code || '');
+      setTestCases(q.test_cases || []);
+    } else {
+      setQLanguage('javascript');
+      setStarterCode("function solution(arr) {\n  // Write your code here\n  return arr;\n}");
+      setTestCases([{ input: '[1, 2, 3]', expected_output: '[3, 2, 1]', description: 'Sample Test Case 1', hidden: false }]);
+    }
+    
+    window.scrollTo({ top: 300, behavior: 'smooth' });
+  };
+
+const handleAddTestCase = () => {
     setTestCases([
       ...testCases,
       { input: '', expected_output: '', description: `Test Case #${testCases.length + 1}`, hidden: false }
@@ -869,10 +947,10 @@ Points: 2`);
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
               <div>
                 <h2 style={{ fontSize: '1.3rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>
-                  Add Questions to Exam
+                  {editingQuestionId ? 'Update Question' : 'Add Questions to Exam'}
                 </h2>
                 <p style={{ color: '#64748b', fontSize: '0.875rem' }}>
-                  Import your question paper in bulk or compose individual questions
+                  {editingQuestionId ? 'Modify the details of your question below' : 'Import your question paper in bulk or compose individual questions'}
                 </p>
               </div>
 
@@ -1265,13 +1343,24 @@ Points: 2`);
                     />
                   </div>
 
-                  <button 
-                    type="submit" 
-                    disabled={addLoading}
-                    className="btn btn-primary btn-md"
-                    style={{ marginTop: '26px' }}
-                  >
-                    {addLoading ? 'Saving...' : '➕ Add Question'}
+                  {editingQuestionId && (
+     <button
+       type="button"
+       onClick={handleCancelEdit}
+       disabled={addLoading}
+       className="btn btn-ghost btn-md"
+       style={{ marginTop: '26px', marginRight: '12px', background: '#f1f5f9', color: '#475569' }}
+     >
+       Cancel Edit
+     </button>
+   )}
+   <button
+     type="submit" 
+     disabled={addLoading}
+     className="btn btn-primary btn-md"
+     style={{ marginTop: '26px' }}
+   >
+                    {addLoading ? 'Saving...' : (editingQuestionId ? '✓ Update Question' : '➕ Add Question')}
                   </button>
                 </div>
               </form>
