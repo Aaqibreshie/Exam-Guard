@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 import WebcamProctor from '@/components/WebcamProctor';
 import CodeEditor from '@/components/CodeEditor';
 import Link from 'next/link';
+import { ConfirmModal } from '@/components/Modal';
 
 export default function TakeExamPage({ params }) {
   const router = useRouter();
