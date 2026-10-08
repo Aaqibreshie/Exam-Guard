@@ -430,7 +430,7 @@ export default function QuestionBankPage() {
           {questions.map(q => {
             const style = getSubjectStyling(q.subject);
             return (
-              <div key={q.id} className="glass-card" style={{ padding: '20px', display: 'flex', justifyContent: 'space-between' }}>
+              <div key={q.id} className="glass-card" style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '8px' }}>
                     <span className="badge-subject" style={{ background: style.bg, color: style.color, borderColor: style.border }}>
@@ -444,11 +444,11 @@ export default function QuestionBankPage() {
                   <h4 style={{ fontSize: '1.05rem', color: '#0f172a', fontWeight: 600 }}>{q.question}</h4>
                 </div>
                 
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button onClick={() => startEdit(q)} className="btn btn-ghost" title="Edit" style={{ color: '#64748b', transition: 'color 0.2s', padding: '8px' }} onMouseEnter={e => e.currentTarget.style.color = '#059669'} onMouseLeave={e => e.currentTarget.style.color = '#64748b'}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <button onClick={() => startEdit(q)} className="btn btn-ghost" title="Edit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', padding: 0, borderRadius: '8px', color: '#64748b', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#059669'} onMouseLeave={e => e.currentTarget.style.color = '#64748b'}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path></svg>
                   </button>
-                  <button onClick={() => handleDelete(q.id)} className="btn btn-ghost" title="Delete" style={{ color: '#64748b', transition: 'color 0.2s', padding: '8px' }} onMouseEnter={e => e.currentTarget.style.color = '#ef4444'} onMouseLeave={e => e.currentTarget.style.color = '#64748b'}>
+                  <button onClick={() => handleDelete(q.id)} className="btn btn-ghost" title="Delete" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', padding: 0, borderRadius: '8px', color: '#64748b', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#ef4444'} onMouseLeave={e => e.currentTarget.style.color = '#64748b'}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
                   </button>
                 </div>
