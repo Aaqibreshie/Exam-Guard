@@ -281,7 +281,7 @@ export default function QuestionBankPage() {
     <div className="dashboard-container">
       <div className="dashboard-header" style={{ marginBottom: '32px' }}>
         <div>
-          <h1 className="dashboard-title">📂 Global Question Bank</h1>
+          <h1 className="dashboard-title" style={{ display: "flex", alignItems: "center", gap: "12px" }}><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#059669" }}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> Global Question Bank</h1>
           <p className="dashboard-subtitle">Manage reusable questions for all your future exams.</p>
         </div>
         <button className="btn btn-primary btn-md" onClick={() => setShowAddModal(true)}>
