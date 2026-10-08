@@ -52,7 +52,7 @@ export default function ExamCard({ exam, role, href, onDeleted }) {
     <Link href={href} style={{ textDecoration: 'none', color: 'inherit', display: 'block', height: '100%' }}>
       <div className="glass-card" style={{ height: '100%', position: 'relative' }}>
         <div className="exam-card-inner">
-          <div className="exam-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="exam-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
               <span className="badge-subject" style={{
                 background: subjectStyle.bg,
