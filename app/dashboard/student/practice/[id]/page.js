@@ -122,8 +122,8 @@ export default function PracticeIDEPage({ params }) {
       {/* Header */}
       <div style={{ padding: '12px 24px', background: '#1e293b', borderBottom: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-          <Link href="/dashboard/student/practice" style={{ color: '#94a3b8', textDecoration: 'none' }}>
-            ← Back to Problems
+          <Link href="/dashboard/student/practice" style={{ color: '#94a3b8', textDecoration: 'none', display: 'flex', alignItems: 'center' }} className="hover-text-white">
+            <div style={{display:'flex',alignItems:'center',gap:'6px'}}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg><span>Back to Problems</span></div>
           </Link>
           <span style={{ color: '#cbd5e1', fontWeight: 600 }}>{question.subject || 'General'}</span>
           <span style={{ 
@@ -131,7 +131,7 @@ export default function PracticeIDEPage({ params }) {
             color: question.difficulty?.toLowerCase() === 'easy' ? '#dcfce7' : (question.difficulty?.toLowerCase() === 'hard' ? '#fee2e2' : '#fef3c7'),
             padding: '2px 8px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 700 
           }}>
-            {question.difficulty || 'Medium'}
+            <div style={{display:'flex',alignItems:'center',gap:'4px'}}><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg><span>{question.difficulty || 'Medium'}</span></div>
           </span>
         </div>
         <div>
@@ -144,7 +144,7 @@ export default function PracticeIDEPage({ params }) {
               opacity: submitting ? 0.7 : 1
             }}
           >
-            {submitting ? 'Running...' : 'Submit Code'}
+            {submitting ? 'Running...' : (question.question_type === 'mcq' ? 'Submit Answer' : 'Submit Code')}
           </button>
         </div>
       </div>
@@ -153,7 +153,8 @@ export default function PracticeIDEPage({ params }) {
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         
         {/* Left Pane: Description */}
-        <div style={{ flex: '1', background: '#ffffff', padding: '32px', overflowY: 'auto', borderRight: '1px solid #e2e8f0' }}>
+        <div style={{ flex: '1', background: '#ffffff', padding: '40px 32px', overflowY: 'auto', borderRight: question.question_type === 'mcq' ? 'none' : '1px solid #e2e8f0', display: 'flex', justifyContent: question.question_type === 'mcq' ? 'center' : 'flex-start' }}>
+          <div style={{ width: '100%', maxWidth: question.question_type === 'mcq' ? '800px' : '100%' }}>
           <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '24px', color: '#0f172a' }}>
             {question.question}
           </h1>
@@ -165,8 +166,7 @@ export default function PracticeIDEPage({ params }) {
                 {(question.options || []).map((opt, i) => {
                   const isSelected = code === opt;
                   return (
-                    <li 
-                      key={i} 
+                    <li className={!isSelected ? "mcq-option" : ""} key={i} 
                       onClick={() => setCode(opt)}
                       style={{ 
                         padding: '16px', 
@@ -175,6 +175,7 @@ export default function PracticeIDEPage({ params }) {
                         borderRadius: '12px', 
                         cursor: 'pointer',
                         transition: 'all 0.2s',
+                        boxShadow: isSelected ? '0 4px 12px rgba(59,130,246,0.15)' : 'none',
                         display: 'flex',
                         alignItems: 'center'
                       }}
@@ -217,6 +218,7 @@ export default function PracticeIDEPage({ params }) {
               </pre>
             </div>
           )}
+          </div>
         </div>
 
         {question.question_type !== 'mcq' && (
@@ -238,6 +240,11 @@ export default function PracticeIDEPage({ params }) {
         )}
 
       </div>
+
+      <style dangerouslySetInnerHTML={{__html: `
+        .hover-text-white:hover { color: #ffffff !important; }
+        .mcq-option:hover { border-color: #93c5fd !important; background-color: #f0f9ff !important; transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+      `}} />
     </div>
   );
 }
