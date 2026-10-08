@@ -31,7 +31,7 @@ export default function Home() {
                 color: '#059669',
                 display: 'flex' 
               }}>
-                🛡️
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
               </span>
               <span style={{ fontSize: '1.35rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#0f172a' }}>
                 Exam<span style={{ color: '#059669' }}>Guard</span>
@@ -55,7 +55,7 @@ export default function Home() {
         {/* Hero Section */}
         <section className="hero-section">
           <div className="hero-badge">
-            <span>🛡️</span> The world&apos;s most secure online exam system
+            <span><svg width="16" height="16" style={{marginRight: '6px'}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg></span> The world&apos;s most secure online exam system
           </div>
 
           <h1 className="hero-title">
@@ -106,7 +106,7 @@ export default function Home() {
                 fontSize: '1.25rem',
                 marginBottom: '20px'
               }}>
-                📝
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
               </div>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0f172a', marginBottom: '10px' }}>
                 Prepare an exam
@@ -136,7 +136,7 @@ export default function Home() {
                 fontSize: '1.25rem',
                 marginBottom: '20px'
               }}>
-                👤
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
               </div>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0f172a', marginBottom: '10px' }}>
                 Give access
@@ -166,7 +166,7 @@ export default function Home() {
                 fontSize: '1.25rem',
                 marginBottom: '20px'
               }}>
-                📊
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
               </div>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0f172a', marginBottom: '10px' }}>
                 Get insights
@@ -215,8 +215,8 @@ export default function Home() {
         fontSize: '0.875rem' 
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-          <div style={{ fontWeight: 600, color: '#0f172a' }}>
-            🛡️ ExamGuard — Online Examination & Assessment Software
+          <div style={{ fontWeight: 600, color: '#0f172a', display: 'flex', alignItems: 'center' }}>
+            <svg width="16" height="16" style={{marginRight: '6px'}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> ExamGuard — Online Examination & Assessment Software
           </div>
           <div>© {new Date().getFullYear()} ExamGuard Inc. All rights reserved.</div>
         </div>
