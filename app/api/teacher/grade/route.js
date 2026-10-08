@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
 
 export async function POST(request) {
   try {
@@ -17,9 +18,16 @@ export async function POST(request) {
       .eq('id', user.id)
       .single();
 
+
     if (profile?.role !== 'teacher') {
       return NextResponse.json({ error: 'Forbidden: Teachers only' }, { status: 403 });
     }
+
+    // Use admin client to bypass RLS for grading
+    const adminSupabase = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY // fallback to anon if service key is missing, though it will fail RLS
+    );
 
     const body = await request.json();
     const { submission_id, breakdown } = body;
@@ -37,7 +45,7 @@ export async function POST(request) {
       totalScore += (q.points_earned || 0);
 
       // Update the answer in the database
-      const { data: updatedAnswer, error: updateError } = await supabase
+      const { data: updatedAnswer, error: updateError } = await adminSupabase
         .from('answers')
         .update({
           is_correct: q.is_correct,
@@ -60,7 +68,7 @@ export async function POST(request) {
     const percentage = totalPossible > 0 ? Math.round((totalScore / totalPossible) * 100) : 0;
 
     // Update the submission total score
-    const { data: updatedSub, error: subError } = await supabase
+    const { data: updatedSub, error: subError } = await adminSupabase
       .from('submissions')
       .update({
         score: totalScore,
