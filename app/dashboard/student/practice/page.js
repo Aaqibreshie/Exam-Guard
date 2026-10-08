@@ -83,36 +83,53 @@ export default function PracticeArenaPage() {
       </div>
 
       <div className="glass-card-static" style={{ padding: '24px', marginBottom: '24px' }}>
-        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-          <input 
-            type="text" 
-            placeholder="Search by Subject (e.g. JavaScript)" 
-            className="form-input" 
-            style={{ maxWidth: '250px' }}
-            value={filterSubject}
-            onChange={e => setFilterSubject(e.target.value)}
-          />
-          <select 
-            className="form-input" 
-            style={{ maxWidth: '180px' }}
-            value={filterDifficulty}
-            onChange={e => setFilterDifficulty(e.target.value)}
-          >
-            <option value="">All Difficulties</option>
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-          </select>
-          <select 
-            className="form-input" 
-            style={{ maxWidth: '180px' }}
-            value={filterStatus}
-            onChange={e => setFilterStatus(e.target.value)}
-          >
-            <option value="">All Statuses</option>
-            <option value="solved">Solved</option>
-            <option value="unsolved">Unsolved</option>
-          </select>
+        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ position: 'relative', width: '100%', maxWidth: '280px' }}>
+            <div style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none', display: 'flex' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </div>
+            <input 
+              type="text" 
+              placeholder="Search by Subject (e.g. JavaScript)" 
+              className="form-input" 
+              style={{ width: '100%', paddingLeft: '42px', background: '#f8fafc', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)', fontWeight: 500 }}
+              value={filterSubject}
+              onChange={e => setFilterSubject(e.target.value)}
+            />
+          </div>
+          
+          <div style={{ position: 'relative' }}>
+            <select 
+              className="form-input premium-select" 
+              style={{ width: '180px', appearance: 'none', background: '#f8fafc', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)', fontWeight: 600, color: '#475569', cursor: 'pointer', paddingRight: '36px' }}
+              value={filterDifficulty}
+              onChange={e => setFilterDifficulty(e.target.value)}
+            >
+              <option value="">All Difficulties</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+            <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none', display: 'flex' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+          </div>
+
+          <div style={{ position: 'relative' }}>
+            <select 
+              className="form-input premium-select" 
+              style={{ width: '180px', appearance: 'none', background: '#f8fafc', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)', fontWeight: 600, color: '#475569', cursor: 'pointer', paddingRight: '36px' }}
+              value={filterStatus}
+              onChange={e => setFilterStatus(e.target.value)}
+            >
+              <option value="">All Statuses</option>
+              <option value="solved">Solved</option>
+              <option value="unsolved">Unsolved</option>
+            </select>
+            <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none', display: 'flex' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -142,7 +159,7 @@ export default function PracticeArenaPage() {
                       {isSolved ? (
                         <span style={{ color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
                       ) : (
-                        <span style={{ color: '#cbd5e1', fontSize: '1.2rem' }}>-</span>
+                        <span style={{ color: '#cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle></svg></span>
                       )}
                     </td>
                     <td style={{ padding: '16px 24px' }}>
