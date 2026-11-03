@@ -13,7 +13,7 @@ export default async function TeacherDashboardLayout({ children }) {
 
   const userRole = user.user_metadata?.role || 'teacher';
   if (userRole !== 'teacher' && userRole !== 'admin') {
-    redirect('/login');
+    redirect('/dashboard/student');
   }
 
   const teacherProfile = {

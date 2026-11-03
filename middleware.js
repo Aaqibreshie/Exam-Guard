@@ -10,60 +10,70 @@ export async function middleware(request) {
     request: { headers: request.headers },
   });
 
-  const supabase = createServerClient(
-    supabaseUrl,
-    supabaseAnonKey,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-
-  const { data: { user } } = await supabase.auth.getUser();
   const { pathname } = request.nextUrl;
 
-  // Redirect unauthenticated users away from dashboard
-  if (!user && pathname.startsWith('/dashboard')) {
-    return NextResponse.redirect(new URL('/login', request.url));
+  // If Supabase environment variables are not configured yet, allow the page to render
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return response;
   }
 
-  // Redirect authenticated users away from login page
-  if (user && pathname === '/login') {
-    const role = user.user_metadata?.role;
-    const isInstructor = role === 'teacher' || role === 'admin';
-    const target = isInstructor ? '/dashboard/teacher' : '/dashboard/student';
-    return NextResponse.redirect(new URL(target, request.url));
-  }
+  try {
+    const supabase = createServerClient(
+      supabaseUrl,
+      supabaseAnonKey,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) =>
+              request.cookies.set(name, value)
+            );
+            response = NextResponse.next({ request });
+            cookiesToSet.forEach(({ name, value, options }) =>
+              response.cookies.set(name, value, options)
+            );
+          },
+        },
+      }
+    );
 
-  if (user && pathname.startsWith('/dashboard')) {
-    const role = user.user_metadata?.role;
-    const isInstructor = role === 'teacher' || role === 'admin';
+    const { data: { user } } = await supabase.auth.getUser();
 
-    // Redirect /dashboard to appropriate sub-route
-    if (pathname === '/dashboard' || pathname === '/dashboard/') {
+    // Redirect unauthenticated users away from dashboard
+    if (!user && pathname.startsWith('/dashboard')) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+
+    // Redirect authenticated users away from login page
+    if (user && pathname === '/login') {
+      const role = user.user_metadata?.role;
+      const isInstructor = role === 'teacher' || role === 'admin';
       const target = isInstructor ? '/dashboard/teacher' : '/dashboard/student';
       return NextResponse.redirect(new URL(target, request.url));
     }
 
-    // Prevent cross-role access
-    if (pathname.startsWith('/dashboard/teacher') && !isInstructor) {
-      return NextResponse.redirect(new URL('/dashboard/student', request.url));
+    if (user && pathname.startsWith('/dashboard')) {
+      const role = user.user_metadata?.role;
+      const isInstructor = role === 'teacher' || role === 'admin';
+
+      // Redirect /dashboard to appropriate sub-route
+      if (pathname === '/dashboard' || pathname === '/dashboard/') {
+        const target = isInstructor ? '/dashboard/teacher' : '/dashboard/student';
+        return NextResponse.redirect(new URL(target, request.url));
+      }
+
+      // Prevent cross-role access
+      if (pathname.startsWith('/dashboard/teacher') && !isInstructor) {
+        return NextResponse.redirect(new URL('/dashboard/student', request.url));
+      }
+      if (pathname.startsWith('/dashboard/student') && isInstructor) {
+        return NextResponse.redirect(new URL('/dashboard/teacher', request.url));
+      }
     }
-    if (pathname.startsWith('/dashboard/student') && isInstructor) {
-      return NextResponse.redirect(new URL('/dashboard/teacher', request.url));
-    }
+  } catch (err) {
+    console.error('Middleware execution error:', err);
   }
 
   return response;

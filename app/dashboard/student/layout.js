@@ -12,8 +12,8 @@ export default async function StudentLayout({ children }) {
   }
 
   const userRole = user.user_metadata?.role || 'student';
-  if (userRole !== 'student') {
-    redirect('/login');
+  if (userRole === 'teacher' || userRole === 'admin') {
+    redirect('/dashboard/teacher');
   }
 
   const studentProfile = {

@@ -47,8 +47,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
       <body className={inter.className}>
-        {children}        </body>
-      <GoogleAnalytics gaId="G-VF00PS7E02" />
+        {children}
+        <GoogleAnalytics gaId="G-VF00PS7E02" />
+      </body>
     </html>
   );
 }
