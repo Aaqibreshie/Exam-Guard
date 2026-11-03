@@ -29,15 +29,19 @@ CREATE TABLE IF NOT EXISTS public.exams (
   is_published BOOLEAN DEFAULT false,
   start_time TIMESTAMPTZ,
   end_time TIMESTAMPTZ,
+  passcode TEXT,
   max_warnings INTEGER DEFAULT 3,
   access_type TEXT DEFAULT 'all' CHECK (access_type IN ('all', 'batch', 'selected')),
   allowed_batch TEXT,
+  require_phone_sidecar BOOLEAN DEFAULT false,
+  require_webcam BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
 -- Ensure new columns exist if table was already created
 ALTER TABLE public.exams ADD COLUMN IF NOT EXISTS access_type TEXT DEFAULT 'all';
 ALTER TABLE public.exams ADD COLUMN IF NOT EXISTS allowed_batch TEXT;
+ALTER TABLE public.exams ADD COLUMN IF NOT EXISTS passcode TEXT;
 ALTER TABLE public.exams ADD COLUMN IF NOT EXISTS require_phone_sidecar BOOLEAN DEFAULT false;
 ALTER TABLE public.exams ADD COLUMN IF NOT EXISTS require_webcam BOOLEAN DEFAULT true;
 

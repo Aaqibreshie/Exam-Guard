@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(request) {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
     const body = await request.json();
     const {
       topic = 'js',
@@ -12,6 +16,11 @@ export async function POST(request) {
       duration = 20,
       userApiKey = ''
     } = body;
+
+    // Must be authenticated if using server's GEMINI_API_KEY
+    if (!user && !userApiKey) {
+      return NextResponse.json({ error: 'Unauthorized: Please log in to generate mock exams.' }, { status: 401 });
+    }
 
     const targetCount = Math.max(1, Math.min(15, parseInt(count) || 5));
     const activeTopic = (customTopic && customTopic.trim()) ? customTopic.trim() : topic;

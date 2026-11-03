@@ -132,7 +132,7 @@ export default function TakeExamPage({ params }) {
         } else if (subData.status === 'in_progress') {
           const { data: qData } = await supabase
             .from('questions')
-            .select('*')
+            .select('id, exam_id, question_text, question_type, options, points, order_index, starter_code, test_cases')
             .eq('exam_id', examId)
             .order('order_index', { ascending: true });
           
@@ -342,7 +342,7 @@ export default function TakeExamPage({ params }) {
       
       const { data: qData } = await supabase
         .from('questions')
-        .select('*')
+        .select('id, exam_id, question_text, question_type, options, points, order_index, starter_code, test_cases')
         .eq('exam_id', examId)
         .order('order_index', { ascending: true });
         
@@ -388,13 +388,12 @@ export default function TakeExamPage({ params }) {
     try {
       const { data: allQuestions } = await supabase
         .from('questions')
-        .select('*')
+        .select('id, exam_id, question_text, question_type, options, points, order_index, starter_code, test_cases')
         .eq('exam_id', examId)
         .order('order_index', { ascending: true });
         
       const qList = allQuestions && allQuestions.length > 0 ? allQuestions : questions;
       const currentAnswers = answersRef.current || answers || {};
-      const results = await calculateExamScoreAsync(qList, currentAnswers);
       const subId = submissionRef.current?.id || submission?.id;
 
       if (!subId) {
@@ -417,29 +416,26 @@ export default function TakeExamPage({ params }) {
       const responseData = await response.json();
       if (!response.ok) throw new Error(responseData.error || 'Failed to submit exam');
 
-      const gradedList = results?.graded_answers || results?.details || [];
-      const reviewItems = qList.map(q => {
-        const studentAns = currentAnswers[q.id] || '';
-        const graded = gradedList.find(g => g.question_id === q.id);
-        return {
-          id: q.id,
-          question_text: q.question_text,
-          options: q.options || [],
-          correct_answer: q.correct_answer,
-          student_answer: studentAns,
-          is_correct: graded?.is_correct,
-          points_earned: graded?.points_earned
-        };
-      });
-
       setScoreData({
         percentage: responseData.submission.percentage,
         score: responseData.submission.score,
         total: responseData.submission.total_possible,
         status: responseData.submission.status
       });
+
+      // Fetch the verified review breakdown from the server
+      try {
+        const reviewRes = await fetch(`/api/student/review?submission_id=${subId}`);
+        if (reviewRes.ok) {
+          const reviewJson = await reviewRes.json();
+          if (reviewJson.breakdown) {
+            setReviewData(reviewJson.breakdown);
+          }
+        }
+      } catch (reviewErr) {
+        console.warn('Could not fetch review data immediately:', reviewErr);
+      }
       
-      setReviewData(reviewItems);
       setIsCompleted(true);
     } catch (err) {
       console.error('Submission failed:', err);

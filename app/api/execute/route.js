@@ -1,7 +1,15 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(req) {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { language, code, test_cases } = await req.json();
 
     if (!language || !code) {
@@ -24,17 +32,22 @@ export async function POST(req) {
 
     // If no test cases, just run it once
     if (!test_cases || test_cases.length === 0) {
-      const response = await fetch('https://emkc.org/api/v1/piston/execute', {
+      const response = await fetch('https://emkc.org/api/v2/piston/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ language: pistonLang.lang, source: code }),
+        body: JSON.stringify({ 
+          language: pistonLang.lang, 
+          version: pistonLang.version,
+          files: [{ content: code }] 
+        }),
       });
       const data = await response.json();
+      const runOutput = data?.run?.output || data?.output || '';
       return NextResponse.json({ 
-        output: data.output || '', 
+        output: runOutput, 
         passed: 1, 
         total: 1,
-        runtime_ms: 12 // simulated for basic execution
+        runtime_ms: 12
       });
     }
 
@@ -42,15 +55,16 @@ export async function POST(req) {
     const failed_tests = [];
     let total_runtime = 0;
 
-    // Run all test cases in parallel
+    // Run all test cases
     const promises = test_cases.map(async (tc) => {
       const start = Date.now();
-      const response = await fetch('https://emkc.org/api/v1/piston/execute', {
+      const response = await fetch('https://emkc.org/api/v2/piston/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           language: pistonLang.lang,
-          source: code,
+          version: pistonLang.version,
+          files: [{ content: code }],
           stdin: String(tc.input || '')
         }),
       });
@@ -58,7 +72,7 @@ export async function POST(req) {
       const runTime = end - start;
       
       const data = await response.json();
-      const actualOut = (data.output || '').trim();
+      const actualOut = (data?.run?.output || data?.output || '').trim();
       const expectedOut = String(tc.expected_output || '').trim();
       
       const isPass = actualOut === expectedOut;

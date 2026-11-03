@@ -44,24 +44,43 @@ export async function POST(request) {
       totalPossible += (q.points || 1);
       totalScore += (q.points_earned || 0);
 
-      // Update the answer in the database
-      const { data: updatedAnswer, error: updateError } = await adminSupabase
+      // Check if answer already exists
+      const { data: existingAns } = await adminSupabase
         .from('answers')
-        .update({
-          is_correct: q.is_correct,
-          points_earned: q.points_earned
-        })
+        .select('id')
         .eq('submission_id', submission_id)
         .eq('question_id', q.id)
-        .select('*');
+        .maybeSingle();
 
-      if (updateError) {
-        console.error('Failed to update answer:', updateError);
-        throw updateError;
-      }
-      
-      if (!updatedAnswer || updatedAnswer.length === 0) {
-        throw new Error(`Permission denied: Unable to update question ${q.id}. This is likely a Supabase RLS policy issue restricting teachers from updating student answers.`);
+      if (existingAns) {
+        const { error: updateError } = await adminSupabase
+          .from('answers')
+          .update({
+            is_correct: q.is_correct,
+            points_earned: q.points_earned
+          })
+          .eq('id', existingAns.id);
+
+        if (updateError) {
+          console.error('Failed to update answer:', updateError);
+          throw updateError;
+        }
+      } else {
+        // Create an answer record if student didn't submit an answer for this question
+        const { error: insertError } = await adminSupabase
+          .from('answers')
+          .insert({
+            submission_id,
+            question_id: q.id,
+            student_answer: q.student_answer || '',
+            is_correct: q.is_correct,
+            points_earned: q.points_earned || 0
+          });
+
+        if (insertError) {
+          console.error('Failed to insert answer:', insertError);
+          throw insertError;
+        }
       }
     }
 

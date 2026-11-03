@@ -51,13 +51,27 @@ export async function GET(request) {
 
     let query = supabase
       .from('questions')
-      .select(profile?.role === 'teacher' ? '*' : 'id, exam_id, question_text, question_type, options, points, order_index')
+      .select(profile?.role === 'teacher' ? '*' : 'id, exam_id, question_text, question_type, options, points, order_index, starter_code, test_cases')
       .eq('exam_id', exam_id)
       .order('order_index')
 
-    const { data: questions, error } = await query
+    const { data: rawQuestions, error } = await query
 
     if (error) throw error
+
+    // For students, sanitize test_cases to hide any marked with hidden: true
+    const questions = profile?.role === 'teacher' 
+      ? rawQuestions 
+      : (rawQuestions || []).map(q => {
+          if (Array.isArray(q.test_cases)) {
+            return {
+              ...q,
+              test_cases: q.test_cases.filter(tc => !tc.hidden)
+            };
+          }
+          return q;
+        });
+
     return NextResponse.json({ questions })
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
@@ -80,7 +94,7 @@ export async function POST(request) {
     if (profile?.role !== 'teacher') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
     const body = await request.json()
-    const { exam_id, question_text, question_type, options, correct_answer, points } = body
+    const { exam_id, question_text, question_type, options, correct_answer, points, starter_code, test_cases } = body
 
     const { data: exam } = await supabase
       .from('exams')
@@ -108,7 +122,9 @@ export async function POST(request) {
         options,
         correct_answer,
         points,
-        order_index
+        order_index,
+        starter_code: starter_code || null,
+        test_cases: test_cases || []
       })
       .select()
       .single()

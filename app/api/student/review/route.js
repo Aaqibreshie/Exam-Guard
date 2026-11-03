@@ -18,6 +18,14 @@ export async function GET(request) {
       return NextResponse.json({ error: 'submission_id or exam_id is required' }, { status: 400 });
     }
 
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    const isInstructor = profile?.role === 'teacher' || profile?.role === 'admin';
+
     // 1. Fetch submission record
     let submission = null;
     if (submissionId) {
@@ -41,6 +49,22 @@ export async function GET(request) {
       submission = data;
     }
 
+    if (!submission) {
+      return NextResponse.json({ error: 'No submission found' }, { status: 404 });
+    }
+
+    // Access control: Students can only view their own completed submissions
+    if (!isInstructor) {
+      if (submission.student_id !== user.id) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+      if (submission.status === 'in_progress') {
+        return NextResponse.json({ 
+          error: 'Review is only available after exam submission has completed.' 
+        }, { status: 403 });
+      }
+    }
+
     const targetExamId = submission?.exam_id || examId;
 
     // 2. Fetch exam details
@@ -49,6 +73,10 @@ export async function GET(request) {
       .select('*')
       .eq('id', targetExamId)
       .single();
+
+    if (isInstructor && exam && exam.created_by !== user.id && profile?.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden: You do not own this exam' }, { status: 403 });
+    }
 
     // 3. Fetch questions
     const { data: questions, error: qError } = await supabase
