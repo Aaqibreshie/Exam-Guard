@@ -193,14 +193,18 @@ export async function PATCH(request) {
           existingAnswers.forEach(ans => existingMap.set(ans.question_id, ans.id));
         }
 
-        for (const ans of answerInserts) {
+        // Batch upsert all answers in a single database roundtrip
+        const upsertPayload = answerInserts.map(ans => {
           if (existingMap.has(ans.question_id)) {
-            // UPDATE
-            await adminSupabase.from('answers').update(ans).eq('id', existingMap.get(ans.question_id));
-          } else {
-            // INSERT
-            await adminSupabase.from('answers').insert(ans);
+            return { ...ans, id: existingMap.get(ans.question_id) };
           }
+          return ans;
+        });
+
+        const { error: upsertErr } = await adminSupabase.from('answers').upsert(upsertPayload);
+        if (upsertErr) {
+          console.error('Failed to upsert answers batch:', upsertErr);
+          throw upsertErr;
         }
       }
     }

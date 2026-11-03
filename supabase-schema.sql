@@ -337,3 +337,13 @@ CREATE POLICY "Teachers view all practice attempts" ON public.practice_attempts
       WHERE profiles.id = auth.uid() AND (profiles.role = 'teacher' OR profiles.role = 'admin')
     )
   );
+
+-- ============================================
+-- 9. High-Performance Lookup Indexes
+-- ============================================
+CREATE INDEX IF NOT EXISTS idx_answers_submission_id ON public.answers(submission_id);
+CREATE INDEX IF NOT EXISTS idx_answers_question_id ON public.answers(question_id);
+CREATE INDEX IF NOT EXISTS idx_submissions_student_exam ON public.submissions(student_id, exam_id);
+CREATE INDEX IF NOT EXISTS idx_cheat_logs_submission_id ON public.cheat_logs(submission_id);
+CREATE INDEX IF NOT EXISTS idx_questions_exam_id ON public.questions(exam_id);
+CREATE INDEX IF NOT EXISTS idx_exam_candidates_student ON public.exam_candidates(student_id);

@@ -60,20 +60,23 @@ export default function TakeExamPage({ params }) {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
 
-      const { data: examData } = await supabase
-        .from('exams')
-        .select('*')
-        .eq('id', examId)
-        .single();
-      
-      setExam(examData);
+      const [examRes, subRes] = await Promise.all([
+        supabase
+          .from('exams')
+          .select('*')
+          .eq('id', examId)
+          .single(),
+        supabase
+          .from('submissions')
+          .select('*')
+          .eq('exam_id', examId)
+          .eq('student_id', user.id)
+          .single()
+      ]);
 
-      const { data: subData } = await supabase
-        .from('submissions')
-        .select('*')
-        .eq('exam_id', examId)
-        .eq('student_id', user.id)
-        .single();
+      const examData = examRes.data;
+      const subData = subRes.data;
+      setExam(examData);
 
       if (subData) {
         setSubmission(subData);
@@ -386,13 +389,6 @@ export default function TakeExamPage({ params }) {
     }
 
     try {
-      const { data: allQuestions } = await supabase
-        .from('questions')
-        .select('id, exam_id, question_text, question_type, options, points, order_index, starter_code, test_cases')
-        .eq('exam_id', examId)
-        .order('order_index', { ascending: true });
-        
-      const qList = allQuestions && allQuestions.length > 0 ? allQuestions : questions;
       const currentAnswers = answersRef.current || answers || {};
       const subId = submissionRef.current?.id || submission?.id;
 

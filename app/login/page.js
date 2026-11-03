@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 
@@ -10,7 +9,6 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
   const supabase = createClient();
 
   const handleLogin = async (e) => {
@@ -28,13 +26,9 @@ export default function Login() {
 
       const user = data?.user;
       const role = user?.user_metadata?.role;
+      const target = (role === 'teacher' || role === 'admin') ? '/dashboard/teacher' : '/dashboard/student';
 
-      if (role === 'teacher' || role === 'admin') {
-        router.push('/dashboard/teacher');
-      } else {
-        router.push('/dashboard/student');
-      }
-      
+      window.location.href = target;
     } catch (err) {
       console.error('Login error:', err);
       const msg = err.message || '';

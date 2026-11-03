@@ -39,48 +39,43 @@ export async function POST(request) {
     let totalScore = 0;
     let totalPossible = 0;
 
-    // Process each question update
+    // Fetch all existing answers for this submission in a single query
+    const { data: existingAnswers } = await adminSupabase
+      .from('answers')
+      .select('id, question_id')
+      .eq('submission_id', submission_id);
+
+    const existingMap = new Map();
+    if (existingAnswers) {
+      existingAnswers.forEach(ans => existingMap.set(ans.question_id, ans.id));
+    }
+
+    // Batch upsert all graded answers in a single database roundtrip
+    const upsertRows = [];
     for (const q of breakdown) {
       totalPossible += (q.points || 1);
       totalScore += (q.points_earned || 0);
 
-      // Check if answer already exists
-      const { data: existingAns } = await adminSupabase
-        .from('answers')
-        .select('id')
-        .eq('submission_id', submission_id)
-        .eq('question_id', q.id)
-        .maybeSingle();
-
-      if (existingAns) {
-        const { error: updateError } = await adminSupabase
-          .from('answers')
-          .update({
-            is_correct: q.is_correct,
-            points_earned: q.points_earned
-          })
-          .eq('id', existingAns.id);
-
-        if (updateError) {
-          console.error('Failed to update answer:', updateError);
-          throw updateError;
-        }
+      const existingId = existingMap.get(q.id);
+      const row = {
+        submission_id,
+        question_id: q.id,
+        is_correct: q.is_correct,
+        points_earned: q.points_earned || 0
+      };
+      if (existingId) {
+        row.id = existingId;
       } else {
-        // Create an answer record if student didn't submit an answer for this question
-        const { error: insertError } = await adminSupabase
-          .from('answers')
-          .insert({
-            submission_id,
-            question_id: q.id,
-            student_answer: q.student_answer || '',
-            is_correct: q.is_correct,
-            points_earned: q.points_earned || 0
-          });
+        row.student_answer = q.student_answer || '';
+      }
+      upsertRows.push(row);
+    }
 
-        if (insertError) {
-          console.error('Failed to insert answer:', insertError);
-          throw insertError;
-        }
+    if (upsertRows.length > 0) {
+      const { error: upsertError } = await adminSupabase.from('answers').upsert(upsertRows);
+      if (upsertError) {
+        console.error('Failed to upsert graded answers batch:', upsertError);
+        throw upsertError;
       }
     }
 

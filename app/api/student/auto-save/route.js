@@ -43,26 +43,24 @@ export async function POST(request) {
       existingAnswers.forEach(ans => existingMap.set(ans.question_id, ans.id));
     }
 
-    // Process each answer
-    for (const [question_id, student_answer] of Object.entries(answers)) {
-      if (student_answer === undefined || student_answer === null) continue;
+    // Batch upsert answers in a single database roundtrip
+    const payload = Object.entries(answers)
+      .filter(([_, val]) => val !== undefined && val !== null)
+      .map(([question_id, student_answer]) => {
+        const item = {
+          submission_id,
+          question_id,
+          student_answer: String(student_answer)
+        };
+        if (existingMap.has(question_id)) {
+          item.id = existingMap.get(question_id);
+        }
+        return item;
+      });
 
-      if (existingMap.has(question_id)) {
-        // UPDATE existing
-        await supabase
-          .from('answers')
-          .update({ student_answer: String(student_answer) })
-          .eq('id', existingMap.get(question_id));
-      } else {
-        // INSERT new
-        await supabase
-          .from('answers')
-          .insert({
-            submission_id,
-            question_id,
-            student_answer: String(student_answer)
-          });
-      }
+    if (payload.length > 0) {
+      const { error: upsertErr } = await supabase.from('answers').upsert(payload);
+      if (upsertErr) throw upsertErr;
     }
 
     return NextResponse.json({ success: true, timestamp: new Date().toISOString() });
