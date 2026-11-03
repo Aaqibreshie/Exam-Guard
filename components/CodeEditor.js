@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Editor, { loader } from '@monaco-editor/react';
 import { runTestCases } from '@/lib/code-runner';
+import { ConfirmModal } from '@/components/Modal';
 
 // Pre-configure Monaco (optional, but good for custom themes)
 loader.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' } });
@@ -21,6 +22,7 @@ export default function CodeEditor({
   const [isRunning, setIsRunning] = useState(false);
   const [testResults, setTestResults] = useState(null);
   const [activeTab, setActiveTab] = useState('tests'); // 'tests' | 'console'
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   // Sync internal state if initialCode changes
   useEffect(() => {

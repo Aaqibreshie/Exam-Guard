@@ -13,6 +13,7 @@ export default function QuestionBankPage() {
   const [error, setError] = useState('');
   const [userId, setUserId] = useState(null);
   const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: "", message: "", isError: false });
+  const showAlert = (message, title = "Notification", isError = false) => setAlertConfig({ isOpen: true, title, message, isError });
   const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, title: "", message: "", isDanger: false, onConfirm: null });
 
   // Form State

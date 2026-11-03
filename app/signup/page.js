@@ -445,7 +445,6 @@ export default function Signup() {
                     setStep('form');
                     setError('');
                     setInfoMessage('');
-                    setDevOtpHint('');
                   }}
                   style={{
                     background: 'none',

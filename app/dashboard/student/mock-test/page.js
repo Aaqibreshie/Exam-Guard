@@ -5,9 +5,23 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import CodeEditor from '@/components/CodeEditor';
 import { runTestCases } from '@/lib/code-runner';
+import { AlertModal, ConfirmModal } from '@/components/Modal';
 
 export default function MockTestPage() {
   const router = useRouter();
+
+  // Modal Dialog States
+  const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
+  const showAlert = (message, title = 'Notification', isError = false) => {
+    setAlertConfig({ isOpen: true, title, message, isError });
+  };
+  const [confirmConfig, setConfirmConfig] = useState({ 
+    isOpen: false, 
+    title: '', 
+    message: '', 
+    isDanger: false, 
+    onConfirm: () => {} 
+  });
 
   // Configuration State
   const [selectedTopic, setSelectedTopic] = useState('js');
