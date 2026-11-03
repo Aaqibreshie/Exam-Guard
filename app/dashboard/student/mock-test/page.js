@@ -595,6 +595,14 @@ export default function MockTestPage() {
             ← Back to Student Dashboard
           </Link>
         </div>
+
+        <AlertModal 
+          isOpen={alertConfig.isOpen}
+          title={alertConfig.title}
+          message={alertConfig.message}
+          isError={alertConfig.isError}
+          onClose={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))}
+        />
       </div>
     );
   }
@@ -881,6 +889,24 @@ export default function MockTestPage() {
             </div>
           </div>
         </div>
+
+        {/* Modals for Active Test View */}
+        <AlertModal 
+          isOpen={alertConfig.isOpen}
+          title={alertConfig.title}
+          message={alertConfig.message}
+          isError={alertConfig.isError}
+          onClose={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))}
+        />
+        <ConfirmModal
+          isOpen={confirmConfig.isOpen}
+          title={confirmConfig.title}
+          message={confirmConfig.message}
+          isDanger={confirmConfig.isDanger}
+          onConfirm={confirmConfig.onConfirm}
+          onCancel={() => setConfirmConfig(prev => ({ ...prev, isOpen: false }))}
+          confirmText="Submit"
+        />
       </div>
     );
   }
