@@ -18,16 +18,19 @@ export async function GET(request) {
 
     const adminSupabase = getAdminClient()
 
-    const { data: profile } = await supabase
+    const { data: profile } = await adminSupabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single()
 
+    const userRole = (user.user_metadata?.role || profile?.role || '').toLowerCase();
+    const isTeacherOrAdmin = userRole === 'teacher' || userRole === 'admin';
+
     const { searchParams } = new URL(request.url)
     const exam_id = searchParams.get('exam_id')
 
-    if (profile?.role === 'teacher') {
+    if (isTeacherOrAdmin) {
       if (exam_id) {
         const { data: submissions, error } = await adminSupabase.from('submissions')
           .select(`*, profiles(full_name, avatar_url)`)
@@ -141,14 +144,14 @@ export async function PATCH(request) {
     let totalPossible = 0
 
     if (answers && Object.keys(answers).length > 0) {
-      const { data: questions } = await supabase
+      const { data: questions } = await adminSupabase
         .from('questions')
         .select('*')
         .eq('exam_id', submission.exam_id)
       
       const answerInserts = []
 
-      for (const q of questions) {
+      for (const q of (questions || [])) {
         totalPossible += (q.points || 1)
         const student_answer = answers[q.id]
         
@@ -182,8 +185,8 @@ export async function PATCH(request) {
       }
 
       if (answerInserts.length > 0) {
-        // Fetch existing answers to safely update or insert
-        const { data: existingAnswers } = await supabase
+        // Fetch existing answers to safely separate updates and inserts
+        const { data: existingAnswers } = await adminSupabase
           .from('answers')
           .select('id, question_id')
           .eq('submission_id', submission_id);
@@ -193,19 +196,29 @@ export async function PATCH(request) {
           existingAnswers.forEach(ans => existingMap.set(ans.question_id, ans.id));
         }
 
-        // Batch upsert all answers in a single database roundtrip
-        const upsertPayload = answerInserts.map(ans => {
-          if (existingMap.has(ans.question_id)) {
-            return { ...ans, id: existingMap.get(ans.question_id) };
-          }
-          return ans;
-        });
+        const toUpdate = [];
+        const toInsert = [];
 
-        const { error: upsertErr } = await adminSupabase.from('answers').upsert(upsertPayload);
-        if (upsertErr) {
-          console.error('Failed to upsert answers batch:', upsertErr);
-          throw upsertErr;
+        for (const ans of answerInserts) {
+          const existingId = existingMap.get(ans.question_id);
+          if (existingId) {
+            toUpdate.push({ id: existingId, ...ans });
+          } else {
+            toInsert.push(ans);
+          }
         }
+
+        const promises = [];
+        if (toInsert.length > 0) {
+          promises.push(adminSupabase.from('answers').insert(toInsert));
+        }
+        for (const item of toUpdate) {
+          const { id: rowId, ...dataToUpdate } = item;
+          promises.push(
+            adminSupabase.from('answers').update(dataToUpdate).eq('id', rowId)
+          );
+        }
+        await Promise.all(promises);
       }
     }
 

@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 import WebcamProctor from '@/components/WebcamProctor';
 import CodeEditor from '@/components/CodeEditor';
 import Link from 'next/link';
-import { ConfirmModal } from '@/components/Modal';
+import { ConfirmModal, AlertModal } from '@/components/Modal';
 
 export default function TakeExamPage({ params }) {
   const router = useRouter();
@@ -29,6 +29,8 @@ export default function TakeExamPage({ params }) {
   const [isCompleted, setIsCompleted] = useState(false);
   const [scoreData, setScoreData] = useState(null);
   const [confirmSubmit, setConfirmSubmit] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
+  const showAlert = (message, title = 'Notification', isError = false) => setAlertConfig({ isOpen: true, title, message, isError });
   const [reviewData, setReviewData] = useState([]);
   const [reviewFilter, setReviewFilter] = useState('all'); // 'all' | 'correct' | 'incorrect'
   const [examStarted, setExamStarted] = useState(false);
@@ -44,6 +46,7 @@ export default function TakeExamPage({ params }) {
   const sidecarChannelRef = useRef(null);
   const answersRef = useRef(answers);
   const lastSavedAnswersRef = useRef({});
+  const autoSaveTimeoutRef = useRef(null);
 
   useEffect(() => {
     answersRef.current = answers;
@@ -371,13 +374,40 @@ export default function TakeExamPage({ params }) {
     }
   };
 
+  const triggerDebouncedAutoSave = (updatedAnswers) => {
+    if (!submissionRef.current?.id || isCompleted) return;
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+    autoSaveTimeoutRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/student/auto-save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            submission_id: submissionRef.current.id,
+            answers: updatedAnswers
+          })
+        });
+        if (res.ok) {
+          lastSavedAnswersRef.current = { ...updatedAnswers };
+        }
+      } catch (e) {
+        console.error('Debounced auto-save failed', e);
+      }
+    }, 1500); // Save within 1.5s so teachers see live selected options
+  };
+
   const handleAnswerChange = (val) => {
     const qId = questions[currentQuestion]?.id;
     if (!qId) return;
-    setAnswers(prev => ({
-      ...prev,
+    const updated = {
+      ...(answersRef.current || answers),
       [qId]: val
-    }));
+    };
+    answersRef.current = updated;
+    setAnswers(updated);
+    triggerDebouncedAutoSave(updated);
   };
 
   const submitExamData = async (auto = false, expelled = false) => {
@@ -435,6 +465,7 @@ export default function TakeExamPage({ params }) {
       setIsCompleted(true);
     } catch (err) {
       console.error('Submission failed:', err);
+      showAlert(err.message || 'Failed to submit exam. Please verify your connection and try again.', 'Submission Failed', true);
     } finally {
       setIsSubmitting(false);
     }
@@ -1276,6 +1307,14 @@ export default function TakeExamPage({ params }) {
         }}
         onCancel={() => setConfirmSubmit(false)}
         confirmText="Submit Exam"
+      />
+
+      <AlertModal
+        isOpen={alertConfig.isOpen}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        isError={alertConfig.isError}
+        onClose={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))}
       />
     </div>
   );

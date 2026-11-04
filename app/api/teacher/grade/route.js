@@ -50,34 +50,45 @@ export async function POST(request) {
       existingAnswers.forEach(ans => existingMap.set(ans.question_id, ans.id));
     }
 
-    // Batch upsert all graded answers in a single database roundtrip
-    const upsertRows = [];
+    // Safely update existing answers and insert missing ones
+    const toUpdate = [];
+    const toInsert = [];
+
     for (const q of breakdown) {
       totalPossible += (q.points || 1);
       totalScore += (q.points_earned || 0);
 
       const existingId = existingMap.get(q.id);
-      const row = {
-        submission_id,
-        question_id: q.id,
-        is_correct: q.is_correct,
-        points_earned: q.points_earned || 0
-      };
       if (existingId) {
-        row.id = existingId;
+        toUpdate.push({
+          id: existingId,
+          is_correct: q.is_correct,
+          points_earned: q.points_earned || 0
+        });
       } else {
-        row.student_answer = q.student_answer || '';
+        toInsert.push({
+          submission_id,
+          question_id: q.id,
+          student_answer: q.student_answer || '',
+          is_correct: q.is_correct,
+          points_earned: q.points_earned || 0
+        });
       }
-      upsertRows.push(row);
     }
 
-    if (upsertRows.length > 0) {
-      const { error: upsertError } = await adminSupabase.from('answers').upsert(upsertRows);
-      if (upsertError) {
-        console.error('Failed to upsert graded answers batch:', upsertError);
-        throw upsertError;
-      }
+    const promises = [];
+    if (toInsert.length > 0) {
+      promises.push(adminSupabase.from('answers').insert(toInsert));
     }
+    for (const item of toUpdate) {
+      promises.push(
+        adminSupabase.from('answers').update({
+          is_correct: item.is_correct,
+          points_earned: item.points_earned
+        }).eq('id', item.id)
+      );
+    }
+    await Promise.all(promises);
 
     const percentage = totalPossible > 0 ? Math.round((totalScore / totalPossible) * 100) : 0;
 

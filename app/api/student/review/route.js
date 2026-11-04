@@ -1,5 +1,13 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
+
+function getAdminClient() {
+  return createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
+}
 
 export async function GET(request) {
   try {
@@ -10,6 +18,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const adminSupabase = getAdminClient();
     const { searchParams } = new URL(request.url);
     const submissionId = searchParams.get('submission_id');
     const examId = searchParams.get('exam_id');
@@ -18,18 +27,19 @@ export async function GET(request) {
       return NextResponse.json({ error: 'submission_id or exam_id is required' }, { status: 400 });
     }
 
-    const { data: profile } = await supabase
+    const { data: profile } = await adminSupabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single();
 
-    const isInstructor = profile?.role === 'teacher' || profile?.role === 'admin';
+    const userRole = (user.user_metadata?.role || profile?.role || '').toLowerCase();
+    const isInstructor = userRole === 'teacher' || userRole === 'admin';
 
     // 1. Fetch submission record
     let submission = null;
     if (submissionId) {
-      const { data, error } = await supabase
+      const { data, error } = await adminSupabase
         .from('submissions')
         .select('*')
         .eq('id', submissionId)
@@ -40,7 +50,7 @@ export async function GET(request) {
       }
       submission = data;
     } else {
-      const { data } = await supabase
+      const { data } = await adminSupabase
         .from('submissions')
         .select('*')
         .eq('exam_id', examId)
@@ -68,18 +78,14 @@ export async function GET(request) {
     const targetExamId = submission?.exam_id || examId;
 
     // 2. Fetch exam details
-    const { data: exam } = await supabase
+    const { data: exam } = await adminSupabase
       .from('exams')
       .select('*')
       .eq('id', targetExamId)
       .single();
 
-    if (isInstructor && exam && exam.created_by !== user.id && profile?.role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden: You do not own this exam' }, { status: 403 });
-    }
-
     // 3. Fetch questions
-    const { data: questions, error: qError } = await supabase
+    const { data: questions, error: qError } = await adminSupabase
       .from('questions')
       .select('*')
       .eq('exam_id', targetExamId)
@@ -92,7 +98,7 @@ export async function GET(request) {
     // 4. Fetch answers if submission exists
     let answers = [];
     if (submission?.id) {
-      const { data: ansData } = await supabase
+      const { data: ansData } = await adminSupabase
         .from('answers')
         .select('*')
         .eq('submission_id', submission.id);

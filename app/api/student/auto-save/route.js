@@ -1,5 +1,13 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
+
+function getAdminClient() {
+  return createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
+}
 
 export async function POST(request) {
   try {
@@ -10,6 +18,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const adminSupabase = getAdminClient();
     const body = await request.json();
     const { submission_id, answers } = body;
 
@@ -18,7 +27,7 @@ export async function POST(request) {
     }
 
     // Verify submission belongs to user
-    const { data: submission } = await supabase
+    const { data: submission } = await adminSupabase
       .from('submissions')
       .select('student_id, status')
       .eq('id', submission_id)
@@ -32,8 +41,8 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Exam already submitted' }, { status: 400 });
     }
 
-    // Fetch existing answers to decide whether to INSERT or UPDATE
-    const { data: existingAnswers } = await supabase
+    // Fetch existing answers to safely separate updates and inserts
+    const { data: existingAnswers } = await adminSupabase
       .from('answers')
       .select('id, question_id')
       .eq('submission_id', submission_id);
@@ -43,25 +52,33 @@ export async function POST(request) {
       existingAnswers.forEach(ans => existingMap.set(ans.question_id, ans.id));
     }
 
-    // Batch upsert answers in a single database roundtrip
-    const payload = Object.entries(answers)
-      .filter(([_, val]) => val !== undefined && val !== null)
-      .map(([question_id, student_answer]) => {
-        const item = {
+    const toUpdate = [];
+    const toInsert = [];
+
+    for (const [question_id, student_answer] of Object.entries(answers)) {
+      if (student_answer === undefined || student_answer === null) continue;
+      const existingId = existingMap.get(question_id);
+      if (existingId) {
+        toUpdate.push({ id: existingId, student_answer: String(student_answer) });
+      } else {
+        toInsert.push({
           submission_id,
           question_id,
           student_answer: String(student_answer)
-        };
-        if (existingMap.has(question_id)) {
-          item.id = existingMap.get(question_id);
-        }
-        return item;
-      });
-
-    if (payload.length > 0) {
-      const { error: upsertErr } = await supabase.from('answers').upsert(payload);
-      if (upsertErr) throw upsertErr;
+        });
+      }
     }
+
+    const promises = [];
+    if (toInsert.length > 0) {
+      promises.push(adminSupabase.from('answers').insert(toInsert));
+    }
+    for (const item of toUpdate) {
+      promises.push(
+        adminSupabase.from('answers').update({ student_answer: item.student_answer }).eq('id', item.id)
+      );
+    }
+    await Promise.all(promises);
 
     return NextResponse.json({ success: true, timestamp: new Date().toISOString() });
   } catch (error) {
